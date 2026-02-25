@@ -21,11 +21,7 @@ Através da modelagem em **Séries Temporais (Sinalizações de Forma Recente em
 ```text
 statsbomb_opendata/
 │
-├── data/               # (Não versionado) Arquivos CSV gerados pelo processo ETL
 ├── docs/               # Documentação acadêmica, laudos estatísticos e Roadmap detalhado
-├── outputs/            
-│   ├── metrics/        # Textos com relatórios de performance dos modelos (Erros/Acertos)
-│   └── plots/          # Visualizações PNG geradas (Convex Hulls, Feature Importance, Heatmaps)
 │
 ├── src/                # Código-fonte principal do projeto
 │   ├── data_loader.py            # Validação inicial da API Statsbomb
