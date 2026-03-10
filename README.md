@@ -1,6 +1,7 @@
-# Projeto Anti Gravity 
+# Projeto StatsBomb
 
-Bem-vindo ao repositório do **Projeto Anti Gravity**, desenvolvido como Trabalho de Conclusão de Curso (TCC). O objetivo deste projeto é construir um sólido pipeline de Extração de Dados (ETL), Inteligência Visual Tática e Modelagem Preditiva (*Machine Learning*) focado em prever resultados de partidas de futebol profissional utilizando dados de eventos abertos da **StatsBomb**.
+
+Bem-vindo ao repositório do **Projeto StatsBomb**, desenvolvido como Trabalho de Conclusão de Curso (TCC). O objetivo deste projeto é construir um sólido pipeline de Extração de Dados (ETL), Inteligência Visual Tática e Modelagem Preditiva (*Machine Learning*) focado em prever resultados de partidas de futebol profissional utilizando dados de eventos abertos da **StatsBomb**.
 
 ## Sobre o Projeto
 
