@@ -1,8 +1,8 @@
-# **Auditoria Técnica e Roadmap Estratégico para o Projeto Anti Gravity: Reestruturação de Pipeline de Dados, Visualização Tática e Modelagem Preditiva em Futebol**
+# **Auditoria Técnica e Roadmap Estratégico para o projeto: Reestruturação de Pipeline de Dados, Visualização Tática e Modelagem Preditiva em Futebol**
 
 ## **1\. Diagnóstico Sistêmico e Análise de Falhas da Fase Piloto**
 
-A implementação inicial do projeto Anti Gravity, embora bem-sucedida na extração algorítmica de métricas geométricas complexas como *Field Tilt* e *Convex Hull* para a final da Copa do Mundo FIFA, revelou uma fragilidade estrutural crítica na arquitetura de dados e na formulação do problema de modelagem. O resultado obtido — um dataset final de apenas 32 linhas e uma acurácia de modelo de 0% — não representa meramente um desempenho subótimo, mas sim um erro fundamental na definição da unidade de análise estatística. Este relatório estabelece as bases teóricas e práticas para a correção deste cenário, detalhando a transição de uma análise descritiva de partida única para um sistema preditivo robusto alimentado por dados históricos massivos.
+A implementação inicial do projeto, embora bem-sucedida na extração algorítmica de métricas geométricas complexas como *Field Tilt* e *Convex Hull* para a final da Copa do Mundo FIFA, revelou uma fragilidade estrutural crítica na arquitetura de dados e na formulação do problema de modelagem. O resultado obtido — um dataset final de apenas 32 linhas e uma acurácia de modelo de 0% — não representa meramente um desempenho subótimo, mas sim um erro fundamental na definição da unidade de análise estatística. Este relatório estabelece as bases teóricas e práticas para a correção deste cenário, detalhando a transição de uma análise descritiva de partida única para um sistema preditivo robusto alimentado por dados históricos massivos.
 
 ### **1.1. A Patologia da Amostra Minúscula (N=32)**
 
@@ -10,15 +10,15 @@ O fenômeno observado, onde o dataset resultante contém apenas 32 observações
 
 Embora esta granularidade seja valiosa para a avaliação de desempenho individual (*scouting*), ela é matematicamente inadequada para a modelagem preditiva de resultados de partidas. Modelos de aprendizado de máquina supervisionados, como *Random Forest* ou *Gradient Boosting*, operam identificando padrões de covariância entre variáveis independentes (*features*) e uma variável dependente (*target*) através de múltiplas instâncias do evento que se deseja prever. Ao tentar prever o "Vencedor da Partida" usando jogadores como unidade amostral dentro de um único jogo, o modelo enfrenta um paradoxo lógico:
 
-1. Se o *target* for o resultado do time, todos os jogadores da Argentina teriam target=1 (Vitória) e todos da França target=0 (Derrota/Empate).  
-2. Qualquer divisão de treino e teste (*train-test split*) realizada dentro desse universo de 32 linhas resultaria em vazamento de dados (*data leakage*) ou em classes não representadas. Por exemplo, se o conjunto de treino contiver apenas jogadores da Argentina, o modelo aprenderá que "todos ganham", falhando catastroficamente ao encontrar um jogador da França no conjunto de teste.  
+1. Se o *target* for o resultado do time, todos os jogadores da Argentina teriam target=1 (Vitória) e todos da França target=0 (Derrota/Empate). 
+2. Qualquer divisão de treino e teste (*train-test split*) realizada dentro desse universo de 32 linhas resultaria em vazamento de dados (*data leakage*) ou em classes não representadas. Por exemplo, se o conjunto de treino contiver apenas jogadores da Argentina, o modelo aprenderá que "todos ganham", falhando catastroficamente ao encontrar um jogador da França no conjunto de teste. 
 3. A acurácia de 0% sugere que o modelo foi incapaz de generalizar ou que a métrica de avaliação foi aplicada a um conjunto de dados onde a classe predita não existia.
 
-Para que o sistema Anti Gravity atinja seus objetivos preditivos, é imperativo redefinir a unidade de análise para a **Equipe-Partida** (*Team-Match*). Sob esta nova ótica, cada linha do dataset deve representar o desempenho agregado de uma equipe em um jogo específico. Consequentemente, para treinar um modelo viável, o volume de dados deve ser expandido de 1 jogo para centenas ou milhares de jogos históricos.
+Para que o sistema atinja seus objetivos preditivos, é imperativo redefinir a unidade de análise para a **Equipe-Partida** (*Team-Match*). Sob esta nova ótica, cada linha do dataset deve representar o desempenho agregado de uma equipe em um jogo específico. Consequentemente, para treinar um modelo viável, o volume de dados deve ser expandido de 1 jogo para centenas ou milhares de jogos históricos.
 
 ### **1.2. Limitações da Abordagem Descritiva vs. Preditiva**
 
-A fase piloto demonstrou competência na engenharia de métricas descritivas. O cálculo correto do *Convex Hull* 1 e do *Field Tilt* indica que o pipeline de processamento geométrico dos eventos (event\_freeze\_frame ou coordenadas de passes) está funcional. No entanto, métricas descritivas explicam o passado (*post-mortem*), enquanto o objetivo do Anti Gravity é antecipar resultados futuros. A falha em obter acurácia reside na ausência de variância histórica. O futebol é um sistema estocástico de baixa pontuação (*low-scoring sport*), onde o resultado final frequentemente diverge do desempenho subjacente devido à aleatoriedade. Um modelo treinado em apenas um jogo assume que aquele evento único é a verdade absoluta e imutável das relações entre métricas e vitória, ignorando a vasta distribuição de probabilidades que rege o esporte. A correção exige a ingestão de múltiplas temporadas de dados para capturar o "sinal" estatístico em meio ao "ruído" da variância de curto prazo.
+A fase piloto demonstrou competência na engenharia de métricas descritivas. O cálculo correto do *Convex Hull* 1 e do *Field Tilt* indica que o pipeline de processamento geométrico dos eventos (event\_freeze\_frame ou coordenadas de passes) está funcional. No entanto, métricas descritivas explicam o passado (*post-mortem*), enquanto o objetivo do é antecipar resultados futuros. A falha em obter acurácia reside na ausência de variância histórica. O futebol é um sistema estocástico de baixa pontuação (*low-scoring sport*), onde o resultado final frequentemente diverge do desempenho subjacente devido à aleatoriedade. Um modelo treinado em apenas um jogo assume que aquele evento único é a verdade absoluta e imutável das relações entre métricas e vitória, ignorando a vasta distribuição de probabilidades que rege o esporte. A correção exige a ingestão de múltiplas temporadas de dados para capturar o "sinal" estatístico em meio ao "ruído" da variância de curto prazo.
 
 ## ---
 
@@ -30,12 +30,12 @@ A solução para a crise de volume de dados reside na exploração sistemática 
 
 A arquitetura de dados da StatsBomb é hierárquica e distribuída em arquivos JSON, acessíveis programaticamente. A compreensão desta estrutura é pré-requisito para a automação do pipeline de ingestão 2:
 
-* **Competições (competitions.json):** Este arquivo atua como o índice mestre do banco de dados. Ele contém chaves primárias vitais: competition\_id e season\_id. A análise dos snippets de pesquisa revela a disponibilidade de datasets ricos, como a "Lionel Messi Data Biography" (cobrindo La Liga de 04/05 a 20/21), a temporada dos "Invincibles" do Arsenal (03/04), e diversas edições da Copa do Mundo e Champions League.4  
-  * *Implicação Estratégica:* O novo pipeline não deve hardcodificar IDs. Ele deve consultar este índice dinamicamente para listar todas as temporadas disponíveis para ligas selecionadas (ex: La Liga, Premier League), maximizando o N amostral.  
-* **Partidas (matches/):** Para cada par competition\_id / season\_id, existe um arquivo contendo a lista completa de jogos. Este nível contém metadados cruciais que muitas vezes são ignorados, como o match\_status, match\_date e, crucialmente, os managers e estádios.6  
-  * *Correção de Pipeline:* É nesta etapa que se deve extrair o *Target* (Resultado). O placar (home\_score, away\_score) permite derivar a variável alvo (Vitória/Empate/Derrota) antes mesmo de processar os eventos, otimizando o fluxo de dados.  
-* **Eventos (events/):** O nível mais granular, onde residem as coordenadas (x, y) de cada ação. A riqueza deste dado permite a reconstrução de métricas avançadas que não estão explícitas no sumário do jogo.7  
-  * *Desafio de Processamento:* Processar milhares de arquivos JSON de eventos exige eficiência. O uso de bibliotecas como statsbombpy 8 facilita a conversão direta para DataFrames pandas, mas a gestão de memória torna-se uma preocupação. O roadmap sugere um processamento em *batches* (lotes), salvando arquivos intermediários (ex: parquet) por temporada.
+* **Competições (competitions.json):** Este arquivo atua como o índice mestre do banco de dados. Ele contém chaves primárias vitais: competition\_id e season\_id. A análise dos snippets de pesquisa revela a disponibilidade de datasets ricos, como a "Lionel Messi Data Biography" (cobrindo La Liga de 04/05 a 20/21), a temporada dos "Invincibles" do Arsenal (03/04), e diversas edições da Copa do Mundo e Champions League.4 
+ * *Implicação Estratégica:* O novo pipeline não deve hardcodificar IDs. Ele deve consultar este índice dinamicamente para listar todas as temporadas disponíveis para ligas selecionadas (ex: La Liga, Premier League), maximizando o N amostral. 
+* **Partidas (matches/):** Para cada par competition\_id / season\_id, existe um arquivo contendo a lista completa de jogos. Este nível contém metadados cruciais que muitas vezes são ignorados, como o match\_status, match\_date e, crucialmente, os managers e estádios.6 
+ * *Correção de Pipeline:* É nesta etapa que se deve extrair o *Target* (Resultado). O placar (home\_score, away\_score) permite derivar a variável alvo (Vitória/Empate/Derrota) antes mesmo de processar os eventos, otimizando o fluxo de dados. 
+* **Eventos (events/):** O nível mais granular, onde residem as coordenadas (x, y) de cada ação. A riqueza deste dado permite a reconstrução de métricas avançadas que não estão explícitas no sumário do jogo.7 
+ * *Desafio de Processamento:* Processar milhares de arquivos JSON de eventos exige eficiência. O uso de bibliotecas como statsbombpy 8 facilita a conversão direta para DataFrames pandas, mas a gestão de memória torna-se uma preocupação. O roadmap sugere um processamento em *batches* (lotes), salvando arquivos intermediários (ex: parquet) por temporada.
 
 ### **2.2. Protocolo de Expansão para La Liga e Copas**
 
@@ -51,22 +51,22 @@ Simplesmente aumentar o volume de dados não garante inteligência preditiva se 
 
 A posse de bola tradicional é enganosa; uma equipe pode reter a bola em sua defesa sem ameaçar o oponente (posse estéril). O *Field Tilt* (Inclinação de Campo) corrige isso focando na territorialidade.
 
-* **Definição Técnica:** É a proporção de passes ou toques de bola realizados no terço final do campo (ataque) em relação ao total de passes no terço final de ambas as equipes na partida.  
-* **Mecanismo de Cálculo:** Utilizando as coordenadas location\_x do StatsBomb (onde o campo vai de 0 a 120), filtram-se os eventos onde ![][image1] (o terço final).  
-  ![][image2]  
+* **Definição Técnica:** É a proporção de passes ou toques de bola realizados no terço final do campo (ataque) em relação ao total de passes no terço final de ambas as equipes na partida. 
+* **Mecanismo de Cálculo:** Utilizando as coordenadas location\_x do StatsBomb (onde o campo vai de 0 a 120), filtram-se os eventos onde ![][image1] (o terço final). 
+ ![][image2] 
 * **Relevância Preditiva:** Estudos indicam que o *Field Tilt* tem uma correlação mais forte com a vitória futura do que a posse de bola, pois indica a capacidade de uma equipe de fixar o adversário em sua zona defensiva, aumentando a probabilidade de erros forçados e oportunidades de gol.
 
 ### **3.2. PPDA (Passes Per Defensive Action): Quantificando a Pressão**
 
 Para prever resultados, é crucial entender a postura defensiva da equipe: ela pressiona alto (high press) ou recua (low block)? O PPDA é a métrica padrão da indústria para isso.9
 
-* **Definição Teórica:** O PPDA mede quantos passes o adversário consegue trocar em sua zona de construção antes de sofrer uma ação defensiva (desarme, interceptação, falta ou duelo).  
-* **Nuance de Implementação:** O cálculo não considera o campo todo. Tipicamente, foca-se nos 60% do campo onde a pressão alta ocorre. No sistema de coordenadas StatsBomb, isso significa monitorar os passes do Oponente onde ![][image3] (campo de defesa deles) e dividir pelo número de ações defensivas do Time Ativo onde ![][image4] (campo de ataque deles).  
+* **Definição Teórica:** O PPDA mede quantos passes o adversário consegue trocar em sua zona de construção antes de sofrer uma ação defensiva (desarme, interceptação, falta ou duelo). 
+* **Nuance de Implementação:** O cálculo não considera o campo todo. Tipicamente, foca-se nos 60% do campo onde a pressão alta ocorre. No sistema de coordenadas StatsBomb, isso significa monitorar os passes do Oponente onde ![][image3] (campo de defesa deles) e dividir pelo número de ações defensivas do Time Ativo onde ![][image4] (campo de ataque deles). 
 * **Interpretação:** Um valor baixo de PPDA (ex: 8.5) indica uma pressão intensa e sufocante. Um valor alto (ex: 20.0) indica uma postura passiva. Esta métrica é vital para o modelo entender o "estilo de jogo" e como estilos opostos interagem (ex: Pressão Alta vs. Construção Lenta).
 
 ### **3.3. Expected Goals (xG) e Deep Completions**
 
-O *Expected Goals* (xG) já é um padrão, mas sua agregação correta é fundamental. Em vez de usar apenas o xG total, o Anti Gravity deve calcular o **xG Difference** (xG a favor \- xG contra) por partida. Adicionalmente, as **Deep Completions** (passes completados dentro de um raio de 20 metros do gol ou dentro da área penal) servem como um proxy para a "penetração" da defesa. Muitas vezes, uma equipe falha em chutar (xG \= 0\) mas entra na área repetidamente; as *Deep Completions* capturam esse perigo latente que o xG perde.11
+O *Expected Goals* (xG) já é um padrão, mas sua agregação correta é fundamental. Em vez de usar apenas o xG total, o deve calcular o **xG Difference** (xG a favor \- xG contra) por partida. Adicionalmente, as **Deep Completions** (passes completados dentro de um raio de 20 metros do gol ou dentro da área penal) servem como um proxy para a "penetração" da defesa. Muitas vezes, uma equipe falha em chutar (xG \= 0\) mas entra na área repetidamente; as *Deep Completions* capturam esse perigo latente que o xG perde.11
 
 ## ---
 
@@ -78,19 +78,19 @@ A solicitação do usuário para gerar "mapas de calor" deve ser atendida com ri
 
 Mapas de calor tradicionais podem ser enganosos se a granularidade (binning) for inadequada. Para o futebol, utilizam-se duas abordagens principais via mplsoccer:
 
-1. **Binning Statistics (Histogramas 2D):** O campo é dividido em células discretas (ex: grade 6x5). Conta-se o número de eventos em cada célula. Esta abordagem é excelente para comparar volumes absolutos e identificar assimetrias (ex: um time que ataca 70% pelo flanco esquerdo).12  
+1. **Binning Statistics (Histogramas 2D):** O campo é dividido em células discretas (ex: grade 6x5). Conta-se o número de eventos em cada célula. Esta abordagem é excelente para comparar volumes absolutos e identificar assimetrias (ex: um time que ataca 70% pelo flanco esquerdo).12 
 2. **Kernel Density Estimation (KDE):** Aplica-se uma função gaussiana sobre cada ponto de evento para criar uma superfície de probabilidade contínua. Isso gera mapas de calor suaves que destacam "manchas" de influência, ideais para visualizar a movimentação de jogadores livres como Lionel Messi, que não respeitam posições fixas.
 
 ### **4.2. Zone 14 e a Geometria da Criação**
 
 A "Zone 14" é um conceito tático seminal. Definida como o retângulo central imediatamente fora da área penal adversária, é estatisticamente a zona de onde se originam a maioria das assistências para gol em ligas de elite.13
 
-* **Definição de Coordenadas:** No padrão StatsBomb (120x80), a Zone 14 ocupa aproximadamente a região ![][image5] e ![][image6].  
+* **Definição de Coordenadas:** No padrão StatsBomb (120x80), a Zone 14 ocupa aproximadamente a região ![][image5] e ![][image6]. 
 * **Half-Spaces (Meio-Espaços):** Flanqueando a Zone 14, os *Half-Spaces* são corredores verticais que permitem passes diagonais letais. Visualizar a ocupação destas zonas específicas permite diagnosticar a eficácia ofensiva de uma equipe. Se o mapa de calor mostrar alta atividade nas laterais mas um "vazio" na Zone 14, a equipe provavelmente está cruzando bolas na área (baixa eficiência) em vez de penetrar na defesa (alta eficiência).15
 
 ### **4.3. Implementação Técnica com mplsoccer**
 
-A biblioteca mplsoccer abstrai a complexidade do desenho do campo. O uso da classe Pitch ou VerticalPitch permite a normalização automática de coordenadas. Para o Anti Gravity, a recomendação é utilizar Pitch(pitch\_type='statsbomb') para garantir alinhamento perfeito com os dados brutos.16 A sobreposição de *Convex Hulls* (já validados na fase anterior) sobre os mapas de calor de passes criará uma visualização rica que mostra não apenas onde o time toca na bola, mas a área efetiva que ele controla.
+A biblioteca mplsoccer abstrai a complexidade do desenho do campo. O uso da classe Pitch ou VerticalPitch permite a normalização automática de coordenadas. Para o , a recomendação é utilizar Pitch(pitch\_type='statsbomb') para garantir alinhamento perfeito com os dados brutos.16 A sobreposição de *Convex Hulls* (já validados na fase anterior) sobre os mapas de calor de passes criará uma visualização rica que mostra não apenas onde o time toca na bola, mas a área efetiva que ele controla.
 
 ## ---
 
@@ -102,24 +102,24 @@ Com os dados escalados e as métricas definidas, o foco desloca-se para a corre�
 
 O futebol exibe dependência temporal. O desempenho de uma equipe hoje é fortemente correlacionado com seu desempenho nas últimas semanas. Um modelo que olha apenas para as estatísticas *do próprio jogo* para prever o resultado desse jogo é inútil (pois as estatísticas só existem após o jogo acabar) ou sofre de vazamento de dados (*data leakage*). A solução é construir *features* baseadas em **Médias Móveis (Rolling Averages)**.18
 
-* Para cada partida ![][image7], as variáveis de entrada devem ser a média das métricas (xG, PPDA, Field Tilt) das partidas ![][image8].  
-* Isso cria um perfil de "Forma Recente". O modelo então aprende: "Quando um time com Média de xG Recente de 2.5 enfrenta um time com Média de Gols Sofridos de 0.5, qual é a probabilidade de vitória?".  
+* Para cada partida ![][image7], as variáveis de entrada devem ser a média das métricas (xG, PPDA, Field Tilt) das partidas ![][image8]. 
+* Isso cria um perfil de "Forma Recente". O modelo então aprende: "Quando um time com Média de xG Recente de 2.5 enfrenta um time com Média de Gols Sofridos de 0.5, qual é a probabilidade de vitória?". 
 * **Janela Dinâmica:** Estudos sugerem que uma janela de 5 a 10 jogos é ideal para capturar a forma atual sem carregar ruído de meses atrás.21
 
 ### **5.2. Seleção de Algoritmo: XGBoost vs. Random Forest**
 
 Para dados tabulares estruturados com relações não-lineares (como futebol), algoritmos baseados em árvores de decisão (*tree-based models*) são o estado da arte.22
 
-* **Random Forest:** Recomendado como *baseline*. É robusto a *outliers*, requer pouco ajuste de hiperparâmetros e fornece uma estimativa confiável da importância das variáveis (*feature importance*).  
+* **Random Forest:** Recomendado como *baseline*. É robusto a *outliers*, requer pouco ajuste de hiperparâmetros e fornece uma estimativa confiável da importância das variáveis (*feature importance*). 
 * **XGBoost (Extreme Gradient Boosting):** Recomendado para a versão final. O XGBoost constrói árvores sequencialmente, onde cada nova árvore tenta corrigir os erros da anterior. Isso permite capturar sutilezas táticas que o Random Forest pode perder, como a interação específica entre um time de posse alta contra um de contra-ataque letal. A literatura aponta que o XGBoost frequentemente supera o Random Forest em previsões de futebol quando devidamente ajustado.22
 
 ### **5.3. Estratégia de Validação: Walk-Forward**
 
-A validação cruzada aleatória (*K-Fold Cross Validation*) é proibida em séries temporais, pois permite que o modelo treine com dados do futuro para prever o passado. O Anti Gravity deve implementar a validação **Walk-Forward** (ou *Time Series Split*):
+A validação cruzada aleatória (*K-Fold Cross Validation*) é proibida em séries temporais, pois permite que o modelo treine com dados do futuro para prever o passado. O deve implementar a validação **Walk-Forward** (ou *Time Series Split*):
 
-1. Treinar em dados de 2015-2018. Testar em 2019\.  
-2. Treinar em 2015-2019. Testar em 2020\.  
-   Isso simula o cenário real de apostas ou previsão analítica e fornece uma métrica de acurácia honesta.
+1. Treinar em dados de 2015-2018. Testar em 2019\. 
+2. Treinar em 2015-2019. Testar em 2020\. 
+ Isso simula o cenário real de apostas ou previsão analítica e fornece uma métrica de acurácia honesta.
 
 
 
@@ -127,33 +127,33 @@ A validação cruzada aleatória (*K-Fold Cross Validation*) é proibida em sér
 
 **7\. Conclusão e Perspectivas**
 
-A execução deste roadmap transformará o projeto Anti Gravity. Ao corrigir a granularidade dos dados (de jogador para equipe) e expandir o horizonte temporal (de 1 jogo para histórico completo), eliminamos a causa raiz da acurácia de 0%. A integração das visualizações da mplsoccer não servirá apenas como "colírio" visual, mas como ferramenta analítica para entender *por que* o modelo prevê determinados resultados — validando se o domínio territorial (visualizado no mapa de calor) se traduz efetivamente em probabilidade de vitória (calculada pelo XGBoost). Este é o ciclo virtuoso da análise de dados esportiva moderna: dados históricos alimentam o modelo, o modelo gera previsões, e a visualização explica a tática por trás dos números.
+A execução deste roadmap transformará o projeto. Ao corrigir a granularidade dos dados (de jogador para equipe) e expandir o horizonte temporal (de 1 jogo para histórico completo), eliminamos a causa raiz da acurácia de 0%. A integração das visualizações da mplsoccer não servirá apenas como "colírio" visual, mas como ferramenta analítica para entender *por que* o modelo prevê determinados resultados — validando se o domínio territorial (visualizado no mapa de calor) se traduz efetivamente em probabilidade de vitória (calculada pelo XGBoost). Este é o ciclo virtuoso da análise de dados esportiva moderna: dados históricos alimentam o modelo, o modelo gera previsões, e a visualização explica a tática por trás dos números.
 
 #### **Referências citadas**
 
-1. Convex Hull — mplsoccer 1.6.1 documentation, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_plots/plot\_convex\_hull.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_convex_hull.html)  
-2. Complete guide on working with the StatsBomb Open Data dataset (w/ applications), acessado em janeiro 26, 2026, [https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b](https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b)  
-3. statsbomb/open-data: Free football data from StatsBomb \- GitHub, acessado em janeiro 26, 2026, [https://github.com/statsbomb/open-data](https://github.com/statsbomb/open-data)  
-4. StatsBomb Release Free Lionel Messi Data: All Seasons From 2004/05 – 2020/21 Now Available \- Hudl, acessado em janeiro 26, 2026, [https://www.hudl.com/blog/free-messi-data-2004-05-2020-21](https://www.hudl.com/blog/free-messi-data-2004-05-2020-21)  
-5. The 2015/16 Big 5 Leagues Free Data Release: La Liga \- Statsbomb Blog Archive, acessado em janeiro 26, 2026, [https://blogarchive.statsbomb.com/news/the-2015-16-big-5-leagues-free-data-release-la-liga/](https://blogarchive.statsbomb.com/news/the-2015-16-big-5-leagues-free-data-release-la-liga/)  
-6. Using Statsbomb — Soccermatics documentation, acessado em janeiro 26, 2026, [https://soccermatics.readthedocs.io/en/latest/gallery/plot\_UsingStatsbomb.html](https://soccermatics.readthedocs.io/en/latest/gallery/plot_UsingStatsbomb.html)  
-7. Working with StatsBomb Data in Python \- Sport Horizon, acessado em janeiro 26, 2026, [https://www.sporthorizon.co.uk/blog/working-with-statsbomb-data-in-python](https://www.sporthorizon.co.uk/blog/working-with-statsbomb-data-in-python)  
-8. statsbomb/statsbombpy: Easily stream StatsBomb data into Python \- GitHub, acessado em janeiro 26, 2026, [https://github.com/statsbomb/statsbombpy](https://github.com/statsbomb/statsbombpy)  
-9. Passes Per Defensive Action (PPDA) \- Hudl Support, acessado em janeiro 26, 2026, [https://support.hudl.com/s/article/passes-defensive-action?](https://support.hudl.com/s/article/passes-defensive-action)  
-10. Looking beyond PPDA: How good™ is your pressing system? | by Rahul Iyer \- Medium, acessado em janeiro 26, 2026, [https://raahulbi103.medium.com/looking-beyond-ppda-how-good-is-your-pressing-system-38037a2579a8](https://raahulbi103.medium.com/looking-beyond-ppda-how-good-is-your-pressing-system-38037a2579a8)  
-11. How to Calculate Progressive Passes in Python for Soccer Analytics \- YouTube, acessado em janeiro 26, 2026, [https://www.youtube.com/watch?v=kuD1yMwjCwE](https://www.youtube.com/watch?v=kuD1yMwjCwE)  
-12. Heatmap — mplsoccer 1.6.1 documentation \- Read the Docs, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_plots/plot\_heatmap.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_heatmap.html)  
-13. Action Heatmaps in Football: Unlocking Data Visualisations for Video Analysis \- zone14, acessado em janeiro 26, 2026, [https://zone14.ai/en/blog/heatmaps-data-visualisation-football-video-analysis](https://zone14.ai/en/blog/heatmaps-data-visualisation-football-video-analysis)  
-14. Visualizing Football Passes in Zone 14 & Half-Space: A Step-by-Step Guide Using Python, acessado em janeiro 26, 2026, [https://medium.com/@jeebakbasak203/visualizing-football-passes-in-zone-14-half-space-a-step-by-step-guide-using-python-bb877b5637bb](https://medium.com/@jeebakbasak203/visualizing-football-passes-in-zone-14-half-space-a-step-by-step-guide-using-python-bb877b5637bb)  
-15. What Is Zone 14 | Why It's The Most Important Part Of The Pitch | The Final Third \- YouTube, acessado em janeiro 26, 2026, [https://www.youtube.com/watch?v=\_EFtACGzD7E](https://www.youtube.com/watch?v=_EFtACGzD7E)  
-16. Quick start — mplsoccer 1.6.1 documentation, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/](https://mplsoccer.readthedocs.io/)  
-17. Pitch Types — mplsoccer 1.6.1 documentation, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_setup/plot\_pitch\_types.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_setup/plot_pitch_types.html)  
-18. How to Predict Football Outcomes Using Machine Learning and Team Form \- Medium, acessado em janeiro 26, 2026, [https://medium.com/data-science-collective/how-to-predict-football-outcomes-using-machine-learning-and-team-form-e2c3335565e4](https://medium.com/data-science-collective/how-to-predict-football-outcomes-using-machine-learning-and-team-form-e2c3335565e4)  
-19. Exploring Rolling Averages of EPA \- Open Source Football, acessado em janeiro 26, 2026, [https://opensourcefootball.com/posts/2020-12-29-exploring-rolling-averages-of-epa/](https://opensourcefootball.com/posts/2020-12-29-exploring-rolling-averages-of-epa/)  
-20. Predicting Premier League match wins using Bayesian Modelling | by Adil Said \- Towards AI, acessado em janeiro 26, 2026, [https://pub.towardsai.net/predicting-premier-league-match-wins-using-bayesian-modelling-32eec733472e](https://pub.towardsai.net/predicting-premier-league-match-wins-using-bayesian-modelling-32eec733472e)  
-21. Build an NFL win probability model (Super Bowl Sunday Edition), acessado em janeiro 26, 2026, [https://www.fantasyfootballdatapros.com/blog/ff-analysis/6](https://www.fantasyfootballdatapros.com/blog/ff-analysis/6)  
-22. Predicting Football Match Outcomes Using Event Data and Machine Learning Algorithms \- Training Ground Guru, acessado em janeiro 26, 2026, [https://trainingground.guru/wp-content/uploads/2025/12/Predicting\_Football\_Match\_Outcomes\_Using\_Event\_Data\_and\_Machine\_Learning\_Algorithms.pdf](https://trainingground.guru/wp-content/uploads/2025/12/Predicting_Football_Match_Outcomes_Using_Event_Data_and_Machine_Learning_Algorithms.pdf)  
-23. Predicting Outcomes of El Clásico Using Random Forests and Extreme Gradient Boosting \- Scholarship @ Claremont, acessado em janeiro 26, 2026, [https://scholarship.claremont.edu/cgi/viewcontent.cgi?article=4056\&context=cmc\_theses](https://scholarship.claremont.edu/cgi/viewcontent.cgi?article=4056&context=cmc_theses)  
+1. Convex Hull — mplsoccer 1.6.1 documentation, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_plots/plot\_convex\_hull.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_convex_hull.html) 
+2. Complete guide on working with the StatsBomb Open Data dataset (w/ applications), acessado em janeiro 26, 2026, [https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b](https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b) 
+3. statsbomb/open-data: Free football data from StatsBomb \- GitHub, acessado em janeiro 26, 2026, [https://github.com/statsbomb/open-data](https://github.com/statsbomb/open-data) 
+4. StatsBomb Release Free Lionel Messi Data: All Seasons From 2004/05 – 2020/21 Now Available \- Hudl, acessado em janeiro 26, 2026, [https://www.hudl.com/blog/free-messi-data-2004-05-2020-21](https://www.hudl.com/blog/free-messi-data-2004-05-2020-21) 
+5. The 2015/16 Big 5 Leagues Free Data Release: La Liga \- Statsbomb Blog Archive, acessado em janeiro 26, 2026, [https://blogarchive.statsbomb.com/news/the-2015-16-big-5-leagues-free-data-release-la-liga/](https://blogarchive.statsbomb.com/news/the-2015-16-big-5-leagues-free-data-release-la-liga/) 
+6. Using Statsbomb — Soccermatics documentation, acessado em janeiro 26, 2026, [https://soccermatics.readthedocs.io/en/latest/gallery/plot\_UsingStatsbomb.html](https://soccermatics.readthedocs.io/en/latest/gallery/plot_UsingStatsbomb.html) 
+7. Working with StatsBomb Data in Python \- Sport Horizon, acessado em janeiro 26, 2026, [https://www.sporthorizon.co.uk/blog/working-with-statsbomb-data-in-python](https://www.sporthorizon.co.uk/blog/working-with-statsbomb-data-in-python) 
+8. statsbomb/statsbombpy: Easily stream StatsBomb data into Python \- GitHub, acessado em janeiro 26, 2026, [https://github.com/statsbomb/statsbombpy](https://github.com/statsbomb/statsbombpy) 
+9. Passes Per Defensive Action (PPDA) \- Hudl Support, acessado em janeiro 26, 2026, [https://support.hudl.com/s/article/passes-defensive-action?](https://support.hudl.com/s/article/passes-defensive-action) 
+10. Looking beyond PPDA: How good™ is your pressing system? | by Rahul Iyer \- Medium, acessado em janeiro 26, 2026, [https://raahulbi103.medium.com/looking-beyond-ppda-how-good-is-your-pressing-system-38037a2579a8](https://raahulbi103.medium.com/looking-beyond-ppda-how-good-is-your-pressing-system-38037a2579a8) 
+11. How to Calculate Progressive Passes in Python for Soccer Analytics \- YouTube, acessado em janeiro 26, 2026, [https://www.youtube.com/watch?v=kuD1yMwjCwE](https://www.youtube.com/watch?v=kuD1yMwjCwE) 
+12. Heatmap — mplsoccer 1.6.1 documentation \- Read the Docs, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_plots/plot\_heatmap.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_heatmap.html) 
+13. Action Heatmaps in Football: Unlocking Data Visualisations for Video Analysis \- zone14, acessado em janeiro 26, 2026, [https://zone14.ai/en/blog/heatmaps-data-visualisation-football-video-analysis](https://zone14.ai/en/blog/heatmaps-data-visualisation-football-video-analysis) 
+14. Visualizing Football Passes in Zone 14 & Half-Space: A Step-by-Step Guide Using Python, acessado em janeiro 26, 2026, [https://medium.com/@jeebakbasak203/visualizing-football-passes-in-zone-14-half-space-a-step-by-step-guide-using-python-bb877b5637bb](https://medium.com/@jeebakbasak203/visualizing-football-passes-in-zone-14-half-space-a-step-by-step-guide-using-python-bb877b5637bb) 
+15. What Is Zone 14 | Why It's The Most Important Part Of The Pitch | The Final Third \- YouTube, acessado em janeiro 26, 2026, [https://www.youtube.com/watch?v=\_EFtACGzD7E](https://www.youtube.com/watch?v=_EFtACGzD7E) 
+16. Quick start — mplsoccer 1.6.1 documentation, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/](https://mplsoccer.readthedocs.io/) 
+17. Pitch Types — mplsoccer 1.6.1 documentation, acessado em janeiro 26, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_setup/plot\_pitch\_types.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_setup/plot_pitch_types.html) 
+18. How to Predict Football Outcomes Using Machine Learning and Team Form \- Medium, acessado em janeiro 26, 2026, [https://medium.com/data-science-collective/how-to-predict-football-outcomes-using-machine-learning-and-team-form-e2c3335565e4](https://medium.com/data-science-collective/how-to-predict-football-outcomes-using-machine-learning-and-team-form-e2c3335565e4) 
+19. Exploring Rolling Averages of EPA \- Open Source Football, acessado em janeiro 26, 2026, [https://opensourcefootball.com/posts/2020-12-29-exploring-rolling-averages-of-epa/](https://opensourcefootball.com/posts/2020-12-29-exploring-rolling-averages-of-epa/) 
+20. Predicting Premier League match wins using Bayesian Modelling | by Adil Said \- Towards AI, acessado em janeiro 26, 2026, [https://pub.towardsai.net/predicting-premier-league-match-wins-using-bayesian-modelling-32eec733472e](https://pub.towardsai.net/predicting-premier-league-match-wins-using-bayesian-modelling-32eec733472e) 
+21. Build an NFL win probability model (Super Bowl Sunday Edition), acessado em janeiro 26, 2026, [https://www.fantasyfootballdatapros.com/blog/ff-analysis/6](https://www.fantasyfootballdatapros.com/blog/ff-analysis/6) 
+22. Predicting Football Match Outcomes Using Event Data and Machine Learning Algorithms \- Training Ground Guru, acessado em janeiro 26, 2026, [https://trainingground.guru/wp-content/uploads/2025/12/Predicting\_Football\_Match\_Outcomes\_Using\_Event\_Data\_and\_Machine\_Learning\_Algorithms.pdf](https://trainingground.guru/wp-content/uploads/2025/12/Predicting_Football_Match_Outcomes_Using_Event_Data_and_Machine_Learning_Algorithms.pdf) 
+23. Predicting Outcomes of El Clásico Using Random Forests and Extreme Gradient Boosting \- Scholarship @ Claremont, acessado em janeiro 26, 2026, [https://scholarship.claremont.edu/cgi/viewcontent.cgi?article=4056\&context=cmc\_theses](https://scholarship.claremont.edu/cgi/viewcontent.cgi?article=4056&context=cmc_theses) 
 24. Predicting Football Results with Random Forest | by Nicholas Utikal | Medium, acessado em janeiro 26, 2026, [https://medium.com/@nicholasutikal/predict-football-results-with-random-forest-c3e6f6e2ee58](https://medium.com/@nicholasutikal/predict-football-results-with-random-forest-c3e6f6e2ee58)
 
 [image1]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAAYCAYAAACvKj4oAAACv0lEQVR4Xu2WS8hNURzFl1Dk7fNIkUhEYmAghaKIJCVFnkVRMpCvyGNIeaSEDEgywIBInpl4lZTyGDDwSGRCSSkjA9a66+zvPDjuOffeuqWz6tf3nb33uXuv/f/v/9lApUqVKuWrN1lJTpKDZBLplhrh5+nkKDlBFpHuqREt0DBynRwgHZm+RjWAXCZryQgylTwgnYhN6u92cp+Mgec+B29Iz2hMyxR28i45Tkalu0trC9mVaZtMnsFmpGnkM5nZNQIYSz6QBYm2lkpGp8ARvUgmpLsL6yycEcmUVCRlUNGU9sFm1B7UjzwkZ5BJZ+WtdmQ+6RN1jifz4LPQiLTTp8kt2HT2/PxLWvwv+GxpPdJycoP0Jb2i/7MG1XePPCGDQqPy/TzZRnaTF+QIPIkWeAX+wUalBShtlb5K4yJGR5PXsMm38FoUGbVLwUiewa52TbaXzIoGqFGdF+Bd/wq/oBebkeaZQ76R1Zm+PE0kH2GTQmnbP+oL66xrcDDZgzhCyu/vZBVcidbA5blRyVgoPqcQF4h6GglHbBNcSX/AJh/B1XI4eYcCBrOSMf2YzmMz0pmeCy/yEMp9PnTmr5EdiTYZvgqbVIXNM5LXXpN2W9UndUBLSsaWkMdwZoSUKiNlkc6fUjQpGb8Np2oPcgl/GgkGtbGqqLUCc4xsJEPIS6RLrKqo+upJk68nz8kGxJWvESl7XsHftKz0bVRllRRh1YjkRgQPYQwWwmE/DBeBn4hTQ+a1W+Oi5zwpfVSyV6A1NwhF4Q7ZiXTFHQpHZ0b0rHV9gucNUrH8gnhMbZeewlcc5fhW8gb+PNyEz1E7pMXrcyWjqguKnCKjgpM0vZS8h7NsHRz5zZkxtQqq+2S4pGaf26Vw+ViG+ALyN6mALY4oU8wKS7ulH9ZhL0Izl4a2aCDZD9/iizDbr1WqVOl/12+ceIY59x0OAwAAAABJRU5ErkJggg==>

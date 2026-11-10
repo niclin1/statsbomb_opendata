@@ -1,0 +1,15 @@
+% Gerado automaticamente por src/reporting/tables.py — não editar à mão.
+\begin{table}[htbp]
+\centering
+\caption{Efeito de acrescentar xG e PPDA do adversário por bloco, sob validação cruzada de cinco dobras agrupadas por partida em treino $\cup$ validação. O conjunto de teste não participa. O Field Tilt do adversário é omitido por ser redundante: as duas equipes somam 1,0 por construção.}
+\label{tab:diag-adversario}
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+Conjunto & Atributos & acuracia & f1\_macro & f1\_Derrota & f1\_Empate & f1\_Vitória & log\_loss \\
+\midrule
+tatico\_11 (atual) & 11 & 48.14 & 46.28 & 53.52 & 29.29 & 56.03 & 1.02 \\
+tatico\_17 (+ adversário) & 17 & 49.99 & 48.53 & 56.55 & 32.61 & 56.43 & 0.99 \\
+\bottomrule
+\end{tabular}
+\end{table}

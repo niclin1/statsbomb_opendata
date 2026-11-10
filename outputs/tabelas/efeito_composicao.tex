@@ -1,0 +1,15 @@
+% Gerado automaticamente por src/reporting/tables.py — não editar à mão.
+\begin{table}[htbp]
+\centering
+\caption{Desempenho do mesmo modelo final em duas partições de teste. A partição do TCC I foi reconstruída pelo corte 80/20 por índice de linha; a partição correta segue o protocolo do Capítulo de metodologia. Como o modelo, os hiperparâmetros e o treino são idênticos, a diferença é atribuível à composição do conjunto.}
+\label{tab:efeito-composicao}
+\small
+\begin{tabular}{lrrlrrrr}
+\toprule
+Conjunto de teste & Partidas & Acurácia & IC 95\% & F1 macro & F1 Derrota & F1 Empate & F1 Vitória \\
+\midrule
+Teste correto (WP1) & 340 & 46.18 & [41.76; 50.59] & 43.44 & 51.79 & 22.69 & 55.83 \\
+Teste do TCC I (reconstruído) & 527 & 54.55 & [51.04; 58.16] & 50.36 & 60.78 & 27.11 & 63.18 \\
+\bottomrule
+\end{tabular}
+\end{table}

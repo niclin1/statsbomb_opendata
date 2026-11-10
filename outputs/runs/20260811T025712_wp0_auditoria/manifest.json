@@ -1,0 +1,446 @@
+{
+  "run_id": "20260811T025712_wp0_auditoria",
+  "nome": "wp0_auditoria",
+  "inicio_utc": "2026-08-11T02:57:12.006371+00:00",
+  "fim_utc": "2026-08-11T02:57:12.082884+00:00",
+  "seed": 42,
+  "dataset": {
+    "caminho": "data/momentum_data.csv",
+    "sha256": "a2b93b33c0182e18de52fda8fcb4c2b42152c0f1b337a803d6638267b29c4300",
+    "bytes": 961800
+  },
+  "git": {
+    "commit": "f8ed5b70c503190738502428b96c872cbc29d84a",
+    "sujo": true
+  },
+  "bibliotecas": {
+    "python": "3.12.10",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "scikit-learn": "1.8.0",
+    "scipy": "1.17.1",
+    "xgboost": "3.4.0",
+    "optuna": "4.8.0",
+    "shap": "0.51.0",
+    "pyyaml": "6.0.3"
+  },
+  "config": {
+    "meta": {
+      "projeto": "Predição de resultado de partidas a partir do momento tático do 1º tempo",
+      "versao_config": 1,
+      "data_decisoes": "2026-08-10",
+      "decisoes": {
+        "D1": "Domínio primário = 5 grandes ligas europeias 2015/16, split temporal por data. Demais blocos = validação externa. (achado A9)",
+        "D2": "is_home entra no modelo principal (12 atributos); ablação 11 × 12 no WP2. (achado A6)",
+        "D3": "Indian Super League mantida na base, fora do domínio primário, como validação externa de nível de liga. (achado A4)",
+        "D4": "Formulação espelhada por equipe mantida (contrato do TCC I); agrupamento por match_id obrigatório; n efetivo = 2.635. (achado A7)"
+      }
+    },
+    "seed": 42,
+    "caminhos": {
+      "dataset": "data/momentum_data.csv",
+      "processed_dir": "data/processed",
+      "runs_dir": "outputs/runs",
+      "tabelas_dir": "outputs/tabelas",
+      "figuras_dir": "outputs/figuras"
+    },
+    "dataset": {
+      "chave_partida": "match_id",
+      "coluna_data": "match_date",
+      "alvo": "target_multiclass",
+      "linhas_por_partida": 2,
+      "classes": {
+        "0": "Derrota",
+        "1": "Empate",
+        "2": "Vitória"
+      },
+      "esperado": {
+        "linhas": 5270,
+        "partidas": 2635,
+        "data_min": "2010-08-29",
+        "data_max": "2024-07-15"
+      }
+    },
+    "competicoes": {
+      "2": {
+        "nome": "Premier League",
+        "dominio": "clubes"
+      },
+      "7": {
+        "nome": "Ligue 1",
+        "dominio": "clubes"
+      },
+      "9": {
+        "nome": "1. Bundesliga",
+        "dominio": "clubes"
+      },
+      "11": {
+        "nome": "La Liga",
+        "dominio": "clubes"
+      },
+      "12": {
+        "nome": "Serie A",
+        "dominio": "clubes"
+      },
+      "1238": {
+        "nome": "Indian Super League",
+        "dominio": "clubes"
+      },
+      "43": {
+        "nome": "Copa do Mundo FIFA",
+        "dominio": "selecoes"
+      },
+      "55": {
+        "nome": "Eurocopa",
+        "dominio": "selecoes"
+      },
+      "223": {
+        "nome": "Copa América",
+        "dominio": "selecoes"
+      }
+    },
+    "features": {
+      "taticos": [
+        "xg_0_15",
+        "ppda_0_15",
+        "field_tilt_0_15",
+        "xg_15_30",
+        "ppda_15_30",
+        "field_tilt_15_30",
+        "xg_30_45",
+        "ppda_30_45",
+        "field_tilt_30_45"
+      ],
+      "cartoes": [
+        "team_red_cards_p1",
+        "opp_red_cards_p1"
+      ],
+      "contexto": [
+        "is_home"
+      ],
+      "conjuntos": {
+        "tatico_11": [
+          "taticos",
+          "cartoes"
+        ],
+        "completo_12": [
+          "taticos",
+          "cartoes",
+          "contexto"
+        ]
+      },
+      "conjunto_principal": "completo_12"
+    },
+    "particao": {
+      "dominio_primario": {
+        "nome": "Cinco grandes ligas europeias — temporada 2015/16",
+        "competition_ids": [
+          2,
+          7,
+          9,
+          11,
+          12
+        ],
+        "season_ids": [
+          27
+        ],
+        "partidas_esperadas": 1823,
+        "split": {
+          "tipo": "temporal_por_data",
+          "fracoes": {
+            "treino": 0.65,
+            "validacao": 0.15,
+            "teste": 0.2
+          }
+        }
+      },
+      "validacao_externa": {
+        "ext_elite_pos2016": {
+          "nome": "Clubes de elite pós-2016 (Barcelona, PSG, Leverkusen)",
+          "mede": "deslocamento temporal + viés de equipe de elite",
+          "competition_ids": [
+            2,
+            7,
+            9,
+            11,
+            12
+          ],
+          "data_min": "2016-06-01",
+          "partidas_esperadas": 264
+        },
+        "ext_laliga_2010_2015": {
+          "nome": "La Liga 2010–2015 (Barcelona)",
+          "mede": "deslocamento temporal para o passado",
+          "competition_ids": [
+            11
+          ],
+          "season_ids": [
+            22,
+            23,
+            24,
+            25,
+            26
+          ],
+          "partidas_esperadas": 171
+        },
+        "ext_isl_2021_22": {
+          "nome": "Indian Super League 2021/22",
+          "mede": "deslocamento de liga / nível técnico",
+          "competition_ids": [
+            1238
+          ],
+          "partidas_esperadas": 115
+        },
+        "ext_selecoes": {
+          "nome": "Torneios de seleções (Copa 2018, Euro 2020, Copa 2022, Euro 2024, Copa América 2024)",
+          "mede": "deslocamento de população",
+          "competition_ids": [
+            43,
+            55,
+            223
+          ],
+          "partidas_esperadas": 262
+        }
+      }
+    },
+    "baselines": [
+      "acaso_uniforme",
+      "classe_majoritaria",
+      "mando_de_campo"
+    ],
+    "modelo": {
+      "tipo": "xgboost",
+      "objective": "multi:softprob",
+      "num_class": 3,
+      "eval_metric": "mlogloss",
+      "params_default": {
+        "max_depth": 6,
+        "eta": 0.3,
+        "num_boost_round": 100
+      }
+    },
+    "otimizacao": {
+      "n_trials": 50,
+      "direcao": "maximize",
+      "metrica": "f1_macro",
+      "validacao": {
+        "tipo": "kfold_agrupado",
+        "n_splits": 5,
+        "chave_grupo": "match_id"
+      },
+      "espaco": {
+        "num_boost_round": {
+          "tipo": "int",
+          "low": 50,
+          "high": 800
+        },
+        "eta": {
+          "tipo": "float",
+          "low": 0.01,
+          "high": 0.3,
+          "log": true
+        },
+        "max_depth": {
+          "tipo": "int",
+          "low": 2,
+          "high": 8
+        },
+        "min_child_weight": {
+          "tipo": "int",
+          "low": 1,
+          "high": 20
+        },
+        "subsample": {
+          "tipo": "float",
+          "low": 0.6,
+          "high": 1.0
+        },
+        "colsample_bytree": {
+          "tipo": "float",
+          "low": 0.5,
+          "high": 1.0
+        },
+        "lambda": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "alpha": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "gamma": {
+          "tipo": "float",
+          "low": 1e-08,
+          "high": 1.0,
+          "log": true
+        }
+      }
+    },
+    "_arquivo_config": "config\\experiment.yaml"
+  },
+  "auditoria": {
+    "tamanho": {
+      "linhas": 5270,
+      "partidas": 2635,
+      "n_efetivo": 2635,
+      "data_min": "2010-08-29",
+      "data_max": "2024-07-15",
+      "nulos": 0
+    },
+    "A7_estrutura_espelhada": {
+      "field_tilt_soma_1_por_partida_%": {
+        "0_15": 100.0,
+        "15_30": 100.0,
+        "30_45": 100.0
+      },
+      "soma_dos_alvos_por_partida": {
+        "2": 2635
+      },
+      "alvo_%_base_inteira": {
+        "0": 37.7,
+        "1": 24.59,
+        "2": 37.7
+      }
+    },
+    "A6_mando_de_campo": {
+      "clubes_%_por_mando": {
+        "0": {
+          "0": 44.67,
+          "1": 24.53,
+          "2": 30.8
+        },
+        "1": {
+          "0": 30.8,
+          "1": 24.53,
+          "2": 44.67
+        }
+      },
+      "selecoes_%_por_mando": {
+        "0": {
+          "0": 40.46,
+          "1": 25.19,
+          "2": 34.35
+        },
+        "1": {
+          "0": 34.35,
+          "1": 25.19,
+          "2": 40.46
+        }
+      },
+      "acuracia_regra_trivial_clubes_%": 44.67
+    },
+    "A9_desbalanceamento_temporal": {
+      "partidas_por_ano_e_dominio": {
+        "clubes": {
+          "2010": 14,
+          "2011": 35,
+          "2012": 38,
+          "2013": 26,
+          "2014": 36,
+          "2015": 892,
+          "2016": 966,
+          "2017": 38,
+          "2018": 34,
+          "2019": 32,
+          "2020": 34,
+          "2021": 77,
+          "2022": 98,
+          "2023": 35,
+          "2024": 18
+        },
+        "selecoes": {
+          "2010": 0,
+          "2011": 0,
+          "2012": 0,
+          "2013": 0,
+          "2014": 0,
+          "2015": 0,
+          "2016": 0,
+          "2017": 0,
+          "2018": 64,
+          "2019": 0,
+          "2020": 0,
+          "2021": 51,
+          "2022": 64,
+          "2023": 0,
+          "2024": 83
+        }
+      },
+      "%_clubes_ate_2016_05": 84.0,
+      "composicao_clubes_pos_2016": {
+        "1. Bundesliga_s281": {
+          "partidas": 34,
+          "equipe_dominante": "Bayer Leverkusen",
+          "partidas_da_dominante": 34
+        },
+        "Indian Super League_s108": {
+          "partidas": 115,
+          "equipe_dominante": "Kerala Blasters",
+          "partidas_da_dominante": 23
+        },
+        "La Liga_s1": {
+          "partidas": 36,
+          "equipe_dominante": "Barcelona",
+          "partidas_da_dominante": 36
+        },
+        "La Liga_s2": {
+          "partidas": 34,
+          "equipe_dominante": "Barcelona",
+          "partidas_da_dominante": 34
+        },
+        "La Liga_s4": {
+          "partidas": 34,
+          "equipe_dominante": "Barcelona",
+          "partidas_da_dominante": 34
+        },
+        "La Liga_s42": {
+          "partidas": 33,
+          "equipe_dominante": "Barcelona",
+          "partidas_da_dominante": 33
+        },
+        "La Liga_s90": {
+          "partidas": 35,
+          "equipe_dominante": "Barcelona",
+          "partidas_da_dominante": 35
+        },
+        "Ligue 1_s108": {
+          "partidas": 26,
+          "equipe_dominante": "Paris Saint-Germain",
+          "partidas_da_dominante": 26
+        },
+        "Ligue 1_s235": {
+          "partidas": 32,
+          "equipe_dominante": "Paris Saint-Germain",
+          "partidas_da_dominante": 32
+        }
+      }
+    },
+    "sanidade_features": {
+      "xg_zero_%": {
+        "0_15": 22.2,
+        "15_30": 18.44,
+        "30_45": 15.01
+      },
+      "field_tilt_zero_%": {
+        "0_15": 0.63,
+        "15_30": 0.42,
+        "30_45": 0.3
+      },
+      "ppda_sentinela_50_linhas": {
+        "0_15": 0,
+        "15_30": 0,
+        "30_45": 1
+      },
+      "ppda_mediana": {
+        "0_15": 2.26,
+        "15_30": 2.26,
+        "30_45": 2.14
+      },
+      "cartao_vermelho_p1_%_linhas": 2.39
+    }
+  }
+}

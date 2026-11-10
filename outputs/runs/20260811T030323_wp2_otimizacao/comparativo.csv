@@ -1,0 +1,11 @@
+Atributos,Modelo,acuracia,f1_macro,f1_macro_sd,f1_Derrota,f1_Empate,f1_Vitória,log_loss
+tatico_11,classe majoritária,36.58,17.86,0.02,0.0,0.0,53.57,
+tatico_11,mando de campo,43.29,33.33,2.22,50.0,0.0,50.0,
+tatico_11,regressão logística,50.54,38.97,0.92,57.95,0.0,58.97,0.99
+tatico_11,XGBoost default,45.72,42.83,2.89,52.03,23.92,52.54,1.22
+tatico_11,XGBoost otimizado,48.14,46.28,1.77,53.52,29.29,56.03,1.02
+completo_12,classe majoritária,36.58,17.86,0.02,0.0,0.0,53.57,
+completo_12,mando de campo,43.29,33.33,2.22,50.0,0.0,50.0,
+completo_12,regressão logística,51.21,39.55,0.57,58.55,0.25,59.85,0.99
+completo_12,XGBoost default,46.32,43.47,2.55,52.19,25.06,53.15,1.22
+completo_12,XGBoost otimizado,47.81,46.08,2.48,52.79,30.38,55.08,1.03

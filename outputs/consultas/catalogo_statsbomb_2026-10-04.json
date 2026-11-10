@@ -1,0 +1,19 @@
+{
+ "consulta_em": "2026-10-04T22:12:30",
+ "fonte": "https://raw.githubusercontent.com/statsbomb/open-data/master/data/competitions.json",
+ "http": 200,
+ "entradas_no_catalogo": 80,
+ "temporadas_fifa_world_cup": [
+  "1958",
+  "1962",
+  "1970",
+  "1974",
+  "1986",
+  "1990",
+  "2018",
+  "2022"
+ ],
+ "copa_2026_disponivel": false,
+ "alguma_temporada_2026_no_catalogo": [],
+ "ultima_atualizacao_de_partidas": "2026-05-26T13:35:19.781918"
+}

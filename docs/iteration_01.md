@@ -24,8 +24,8 @@ Para o escopo de um TCC em Engenharia de Computação, o problema não é apenas
 
 Este processo exige a aplicação de técnicas de:
 
-1. **Parsing e ETL:** Processamento eficiente de arquivos JSON aninhados e normalização de esquemas de dados.  
-2. **Geometria Computacional:** Manipulação de coordenadas para definir zonas, calcular distâncias euclidianas, ângulos de passe e áreas de polígonos (*convex hulls*).  
+1. **Parsing e ETL:** Processamento eficiente de arquivos JSON aninhados e normalização de esquemas de dados. 
+2. **Geometria Computacional:** Manipulação de coordenadas para definir zonas, calcular distâncias euclidianas, ângulos de passe e áreas de polígonos (*convex hulls*). 
 3. **Aprendizado Supervisionado:** Treinamento e validação de classificadores para mapear as *features* processadas nas classes de resultado (Vitória/Empate/Derrota).
 
 ## ---
@@ -42,34 +42,34 @@ O repositório público da StatsBomb organiza-se em três níveis principais de 
 
 Este arquivo atua como o catálogo mestre. Ele contém metadados sobre os campeonatos disponíveis (ex: La Liga, Copa do Mundo, Eurocopa) e as temporadas correspondentes.
 
-* **Identificadores Críticos:** competition\_id e season\_id.  
+* **Identificadores Críticos:** competition\_id e season\_id. 
 * **Função no Pipeline:** Serve como iterador inicial. O script de ingestão deve ler este arquivo para identificar quais IDs de competição e temporada serão processados.
 
 #### **2.1.2. Matches (matches/{competition\_id}/{season\_id}.json)**
 
 Para cada par competição-temporada, existe um arquivo JSON contendo a lista de todas as partidas.
 
-* **Conteúdo:** Metadados de alto nível da partida, como data, hora, estádio, árbitro, treinadores e, crucialmente, o placar final (home\_score, away\_score) e os times envolvidos (home\_team, away\_team).  
-* **Função no Pipeline:**  
-  1. **Índice de Eventos:** Fornece o match\_id, que é a chave para acessar o arquivo de eventos correspondente.  
-  2. **Geração do Target (Rótulo):** É a partir dos campos de placar neste arquivo que se deriva a variável alvo (target) para o modelo supervisionado. A lógica é:  
-     * Se home\_score \> away\_score ![][image2] Target \= Home\_Win (ou 0).  
-     * Se home\_score \== away\_score ![][image2] Target \= Draw (ou 1).  
-     * Se home\_score \< away\_score ![][image2] Target \= Away\_Win (ou 2).
+* **Conteúdo:** Metadados de alto nível da partida, como data, hora, estádio, árbitro, treinadores e, crucialmente, o placar final (home\_score, away\_score) e os times envolvidos (home\_team, away\_team). 
+* **Função no Pipeline:** 
+ 1. **Índice de Eventos:** Fornece o match\_id, que é a chave para acessar o arquivo de eventos correspondente. 
+ 2. **Geração do Target (Rótulo):** É a partir dos campos de placar neste arquivo que se deriva a variável alvo (target) para o modelo supervisionado. A lógica é: 
+ * Se home\_score \> away\_score ![][image2] Target \= Home\_Win (ou 0). 
+ * Se home\_score \== away\_score ![][image2] Target \= Draw (ou 1). 
+ * Se home\_score \< away\_score ![][image2] Target \= Away\_Win (ou 2).
 
 #### **2.1.3. Events (events/{match\_id}.json)**
 
 Este é o nível mais granular e volumoso. Cada arquivo contém a sequência cronológica completa de eventos de uma única partida.
 
-* **Estrutura:** Lista de objetos JSON, onde cada objeto representa uma ação atômica (Passe, Chute, Drible, Pressão).  
-* **Atributos Fundamentais:**  
-  * index: Ordem sequencial do evento.  
-  * timestamp: Tempo decorrido (minutos:segundos).  
-  * type: Categoria do evento (ex: "Pass", "Shot", "Ball Recovery").  
-  * location: Vetor \[x, y\] indicando a posição da ação.  
-  * team: Time que executou a ação.  
-  * player: Jogador responsável.  
-  * Atributos específicos por tipo (ex: pass.end\_location, shot.outcome, shot.statsbomb\_xg).
+* **Estrutura:** Lista de objetos JSON, onde cada objeto representa uma ação atômica (Passe, Chute, Drible, Pressão). 
+* **Atributos Fundamentais:** 
+ * index: Ordem sequencial do evento. 
+ * timestamp: Tempo decorrido (minutos:segundos). 
+ * type: Categoria do evento (ex: "Pass", "Shot", "Ball Recovery"). 
+ * location: Vetor \[x, y\] indicando a posição da ação. 
+ * team: Time que executou a ação. 
+ * player: Jogador responsável. 
+ * Atributos específicos por tipo (ex: pass.end\_location, shot.outcome, shot.statsbomb\_xg).
 
 ### **2.2. Sistema de Coordenadas e Normalização Espacial**
 
@@ -84,14 +84,14 @@ A StatsBomb utiliza um sistema de coordenadas cartesiano fixo para todos os camp
 
 Diferente de sistemas de rastreamento ótico que mantêm as coordenadas fixas em relação ao estádio, a StatsBomb inverte as coordenadas para o time que detém a posse. Isso significa que um chute na coordenada \`\` é sempre um chute muito próximo ao gol adversário, seja ele realizado pelo Time A ou pelo Time B.
 
-* **Implicação para Features:** Para métricas ofensivas (chutes, passes no terço final), você pode usar as coordenadas diretamente.  
+* **Implicação para Features:** Para métricas ofensivas (chutes, passes no terço final), você pode usar as coordenadas diretamente. 
 * **Implicação para Mapas Defensivos:** Se você quiser mapear *onde* um time sofre pressão, deve inverter as coordenadas do evento do adversário: ![][image4] e ![][image5].7
 
 ### **2.3. Ferramentas e Bibliotecas de Ingestão**
 
 Para interagir com este ecossistema em Python, o uso de bibliotecas especializadas é recomendado para abstrair a complexidade do parsing inicial JSON. As duas principais opções identificadas na pesquisa são:
 
-1. **statsbombpy**: A biblioteca oficial. Excelente para extração rápida de DataFrames pandas diretamente da API ou arquivos locais. Ela realiza um achatamento automático de muitos atributos, facilitando o acesso a colunas como pass.end\_location.1  
+1. **statsbombpy**: A biblioteca oficial. Excelente para extração rápida de DataFrames pandas diretamente da API ou arquivos locais. Ela realiza um achatamento automático de muitos atributos, facilitando o acesso a colunas como pass.end\_location.1 
 2. **kloppy**: Uma biblioteca agnóstica de provedor que padroniza dados de diferentes fontes (Opta, Wyscout, StatsBomb). Sua vantagem é a capacidade de converter coordenadas e nomes de eventos para um padrão unificado, o que é útil se o projeto expandir para outras fontes no futuro.10
 
 Para este TCC, recomenda-se o uso da **statsbombpy** devido à sua integração nativa e facilidade em expor os atributos específicos da StatsBomb (como freeze\_frame e shot.statsbomb\_xg) que são cruciais para as features avançadas propostas.
@@ -110,19 +110,19 @@ Dividir o campo em zonas discretas permite agregar eventos e identificar padrõe
 
 A divisão clássica em um grid de ![][image6] (18 zonas) é amplamente utilizada na literatura acadêmica e tática.5 Neste esquema, as zonas centrais logo à frente da área adversária são críticas.
 
-* **Definição Técnica:**  
-  * Largura da Zona (X): ![][image7] unidades.  
-  * Altura da Zona (Y): ![][image8] unidades.  
-* **A "Zona 14":** Localizada centralmente no ataque, é estatisticamente a área mais fértil para assistências (o "buraco" entre a defesa e o meio-campo adversário).  
-  * **Coordenadas da Zona 14 (StatsBomb):** $X \\in $, $Y \\in $. (Nota: O grid exato pode variar levemente, mas funcionalmente é o retângulo central no penúltimo setor do campo).  
+* **Definição Técnica:** 
+ * Largura da Zona (X): ![][image7] unidades. 
+ * Altura da Zona (Y): ![][image8] unidades. 
+* **A "Zona 14":** Localizada centralmente no ataque, é estatisticamente a área mais fértil para assistências (o "buraco" entre a defesa e o meio-campo adversário). 
+ * **Coordenadas da Zona 14 (StatsBomb):** $X \\in $, $Y \\in $. (Nota: O grid exato pode variar levemente, mas funcionalmente é o retângulo central no penúltimo setor do campo). 
 * **Feature a Extrair:** Zone14\_Pass\_Count, Zone14\_Recovery\_Count. Times com alto volume de passes completados na Zona 14 tendem a ter maior probabilidade de vitória.
 
 #### **3.1.2. Canais Verticais e *Half-Spaces***
 
 O futebol moderno enfatiza o uso dos "meio-espaços" (*half-spaces*), corredores verticais entre a lateral e o centro. Eles oferecem ângulos de passe diagonais ótimos para o gol.
 
-* **Divisão Vertical (Y):** 5 Canais ![][image2] Lateral Esq, Meio-espaço Esq, Centro, Meio-espaço Dir, Lateral Dir.  
-* **Divisão Horizontal (X):** Terços ![][image2] Defesa (![][image9]), Meio (![][image10]), Ataque (![][image11]).  
+* **Divisão Vertical (Y):** 5 Canais ![][image2] Lateral Esq, Meio-espaço Esq, Centro, Meio-espaço Dir, Lateral Dir. 
+* **Divisão Horizontal (X):** Terços ![][image2] Defesa (![][image9]), Meio (![][image10]), Ataque (![][image11]). 
 * **Feature a Extrair:** Contagem de passes progressivos originados nos *half-spaces* do terço ofensivo.
 
 ### **3.2. Métricas Contextuais Avançadas**
@@ -133,29 +133,29 @@ Além da contagem simples por zona, o TCC deve implementar métricas compostas q
 
 Esta métrica refina a "posse de bola" focando apenas na posse territorialmente relevante. Ela mede a dominância territorial comparando os passes no terço final.14
 
-* **Fórmula:**  
-  ![][image12]  
-* **Implementação Python:** Filtrar eventos onde type \== "Pass" e coordenada ![][image13].  
-* **Interpretação:** Um *Field Tilt* \> 50% indica que o time jogou mais tempo próximo ao gol adversário do que defendeu próximo ao seu, um preditor forte de desempenho.
+* **Fórmula:** 
+ ![][image12] 
+* **Implementação Python:** Filtrar eventos onde type \== "Pass" e coordenada ![][image13]. 
+* **Interpretação:** Um *Field Tilt* \> 50% indica que o tempo da equipe próximo ao gol foi maior que o de defesa em seu próprio campo, indicando desempenho preditivo.
 
 #### **3.2.2. PPDA (Passes Per Defensive Action)**
 
 O PPDA quantifica a intensidade da pressão alta (*pressing*). Ele calcula quantos passes o adversário consegue trocar antes de sofrer uma ação defensiva.16
 
-* **Área de Cálculo:** Tipicamente, considera-se a pressão exercida nos 60% do campo de ataque (![][image14]).  
-* **Componentes:**  
-  * Numerador: Passes do adversário completados na sua própria defesa/meio-campo (até ![][image15] do ponto de vista do adversário).  
-  * Denominador: Soma de ações defensivas do time (Desarmes, Interceptações, Faltas, Duelos) na zona de pressão (![][image14]).  
-* **Fórmula:**  
-  ![][image16]  
+* **Área de Cálculo:** Tipicamente, considera-se a pressão exercida nos 60% do campo de ataque (![][image14]). 
+* **Componentes:** 
+ * Numerador: Passes do adversário completados na sua própria defesa/meio-campo (até ![][image15] do ponto de vista do adversário). 
+ * Denominador: Soma de ações defensivas do time (Desarmes, Interceptações, Faltas, Duelos) na zona de pressão (![][image14]). 
+* **Fórmula:** 
+ ![][image16] 
 * **Interpretação:** Valores **menores** indicam maior intensidade de pressão (o adversário troca poucos passes antes de ser combatido).
 
 #### **3.2.3. Convex Hulls (Envoltória Convexa)**
 
 Para visualizar e quantificar a largura e profundidade do time, utiliza-se o *Convex Hull*, que é o menor polígono convexo que contém todos os pontos de eventos de passe de um time.18
 
-* **Feature Numérica:** Área do Convex Hull (![][image17] ou unidades quadradas de campo).  
-* **Implementação:** Utilizar scipy.spatial.ConvexHull sobre o array de coordenadas ![][image1] dos passes.  
+* **Feature Numérica:** Área do Convex Hull (![][image17] ou unidades quadradas de campo). 
+* **Implementação:** Utilizar scipy.spatial.ConvexHull sobre o array de coordenadas ![][image1] dos passes. 
 * **Interpretação:** Uma área muito pequena pode indicar um time compactado defensivamente ou com dificuldades de criar linhas de passe. Uma área ampla no campo de ataque sugere domínio espacial.
 
 ## ---
@@ -173,26 +173,26 @@ A transformação de ![][image18] eventos em 1 linha de dados exige funções de
 | Feature ID | Nome da Coluna | Descrição Técnica | Origem |
 | :---- | :---- | :---- | :---- |
 | **Identificadores** | match\_id | ID único da partida | matches.json |
-|  | home\_team\_id | ID do time mandante | matches.json |
-|  | away\_team\_id | ID do time visitante | matches.json |
+| | home\_team\_id | ID do time mandante | matches.json |
+| | away\_team\_id | ID do time visitante | matches.json |
 | **Ofensivas** | home\_xG\_sum | Soma do shot.statsbomb\_xg do mandante | events (filtro Shot) |
-|  | home\_shots\_box | Contagem de chutes dentro da área (![][image19]) | events \+ coordenadas |
-|  | home\_zone14\_entries | Passes recebidos na Zona 14 | events \+ grid lógico |
+| | home\_shots\_box | Contagem de chutes dentro da área (![][image19]) | events \+ coordenadas |
+| | home\_zone14\_entries | Passes recebidos na Zona 14 | events \+ grid lógico |
 | **Contextuais** | match\_field\_tilt | % de posse no terço final (mandante) | Cálculo derivado |
-|  | home\_ppda | Índice de pressão do mandante | Cálculo derivado |
-|  | away\_ppda | Índice de pressão do visitante | Cálculo derivado |
+| | home\_ppda | Índice de pressão do mandante | Cálculo derivado |
+| | away\_ppda | Índice de pressão do visitante | Cálculo derivado |
 | **Espaciais** | home\_hull\_area | Área do polígono de passes do mandante | scipy.spatial |
-|  | home\_avg\_def\_line | Média da coordenada X de ações defensivas | events (filtro Defensive) |
+| | home\_avg\_def\_line | Média da coordenada X de ações defensivas | events (filtro Defensive) |
 | **Target** | match\_result | 0 (Home Win), 1 (Draw), 2 (Away Win) | matches.json (placar) |
 
 ### **4.2. Tratamento de Vazamento de Dados (Look-ahead Bias)**
 
 Uma distinção metodológica crucial deve ser feita entre **Análise Pós-Jogo** e **Previsão Pré-Jogo**:
 
-1. **Classificação Diagnóstica (Pós-Jogo):** Usa as estatísticas *da própria partida* para classificar o resultado. Ex: "Quem chuta mais vence?". Útil para entender *quais* fatores levam à vitória.  
-2. **Previsão (Forecasting):** Usa dados *históricos* para prever o futuro.  
-   * **Estratégia para o TCC:** Para prever o resultado da partida ![][image20], as features não podem vir de ![][image20]. Devem ser médias móveis (ex: média dos últimos 5 jogos) das métricas acima.  
-   * **Implementação:** Calcular as features por partida, ordenar cronologicamente e aplicar funções de janela deslizante (rolling window) para gerar as features de entrada do modelo.
+1. **Classificação Diagnóstica (Pós-Jogo):** Usa as estatísticas *da própria partida* para classificar o resultado. Ex: "Quem chuta mais vence?". Útil para entender *quais* fatores levam à vitória. 
+2. **Previsão (Forecasting):** Usa dados *históricos* para prever o futuro. 
+ * **Estratégia para o TCC:** Para prever o resultado da partida ![][image20], as features não podem vir de ![][image20]. Devem ser médias móveis (ex: média dos últimos 5 jogos) das métricas acima. 
+ * **Implementação:** Calcular as features por partida, ordenar cronologicamente e aplicar funções de janela deslizante (rolling window) para gerar as features de entrada do modelo.
 
 ## ---
 
@@ -204,25 +204,25 @@ Dada a natureza tabular e a dimensionalidade moderada do dataset final (centenas
 
 #### **5.1.1. Regressão Logística (Multinomial)**
 
-* **Justificativa:** Serve como o *baseline* (linha de base) ideal. É computacionalmente barata e altamente interpretável. Os coeficientes do modelo indicarão diretamente se uma *feature* (ex: PPDA) aumenta ou diminui a probabilidade de vitória.3  
+* **Justificativa:** Serve como o *baseline* (linha de base) ideal. É computacionalmente barata e altamente interpretável. Os coeficientes do modelo indicarão diretamente se uma *feature* (ex: PPDA) aumenta ou diminui a probabilidade de vitória.3 
 * **Aplicação:** Classificação multiclasse (Home/Draw/Away).
 
 #### **5.1.2. Random Forest (Floresta Aleatória)**
 
-* **Justificativa:** Capaz de capturar relações não-lineares complexas (ex: a posse de bola só é benéfica se estiver acima de um certo limiar de *Field Tilt*). É robusto a *outliers* e fornece a métrica de "Importância das Features", vital para a análise do TCC.3  
+* **Justificativa:** Capaz de capturar relações não-lineares complexas (ex: a posse de bola só é benéfica se estiver acima de um certo limiar de *Field Tilt*). É robusto a *outliers* e fornece a métrica de "Importância das Features", vital para a análise do TCC.3 
 * **Configuração:** Ensemble de árvores de decisão. Hiperparâmetros principais: número de árvores, profundidade máxima.
 
 #### **5.1.3. XGBoost (Extreme Gradient Boosting)**
 
-* **Justificativa:** Estado da arte para dados tabulares estruturados. Geralmente oferece acurácia superior ao Random Forest ao otimizar a função de perda de forma mais agressiva. É o algoritmo padrão em competições de ciência de dados e literatura de *sports analytics*.3  
+* **Justificativa:** Estado da arte para dados tabulares estruturados. Geralmente oferece acurácia superior ao Random Forest ao otimizar a função de perda de forma mais agressiva. É o algoritmo padrão em competições de ciência de dados e literatura de *sports analytics*.3 
 * **Desafio:** Requer um ajuste de hiperparâmetros mais fino (*tuning*) para evitar *overfitting* em datasets menores.
 
 ### **5.2. Métricas de Avaliação**
 
 A acurácia global (Accuracy) pode ser enganosa no futebol devido à frequência de empates (cerca de 25-30% dos jogos). O plano de avaliação deve incluir:
 
-* **Matriz de Confusão:** Para visualizar erros específicos (ex: modelo confundindo Empate com Vitória do Mandante).  
-* **F1-Score (Macro):** Média harmônica de precisão e *recall*, tratando todas as classes (V/E/D) com igual importância.  
+* **Matriz de Confusão:** Para visualizar erros específicos (ex: modelo confundindo Empate com Vitória do Mandante). 
+* **F1-Score (Macro):** Média harmônica de precisão e *recall*, tratando todas as classes (V/E/D) com igual importância. 
 * **Log-Loss:** Penaliza previsões probabilísticas incorretas com confiança alta.
 
 ## ---
@@ -233,49 +233,49 @@ Para estruturar o desenvolvimento do TCC, propõe-se um cronograma dividido em f
 
 ### **Fase 1: Ingestão e Exploração de Dados (Semanas 1-4)**
 
-* **Tarefa 1.1:** Configurar ambiente Python (Jupyter, Pandas, Scikit-learn).  
-* **Tarefa 1.2:** Instalar e testar statsbombpy. Baixar dados de uma competição completa (ex: La Liga 2020/21).  
-* **Tarefa 1.3:** Desenvolver script de *parsing* para extrair coordenadas ![][image1] de chutes e passes.  
+* **Tarefa 1.1:** Configurar ambiente Python (Jupyter, Pandas, Scikit-learn). 
+* **Tarefa 1.2:** Instalar e testar statsbombpy. Baixar dados de uma competição completa (ex: La Liga 2020/21). 
+* **Tarefa 1.3:** Desenvolver script de *parsing* para extrair coordenadas ![][image1] de chutes e passes. 
 * **Tarefa 1.4:** Plotar visualmente os eventos de uma partida usando mplsoccer para validar o entendimento do sistema de coordenadas (verificar se o ataque está sempre da esquerda para a direita).
 
 ### **Fase 2: Engenharia de Atributos e Zonas (Semanas 5-8)**
 
-* **Tarefa 2.1:** Implementar função assign\_zone(x, y) que retorna o ID da zona (1-18) para cada evento.  
-* **Tarefa 2.2:** Desenvolver algoritmo para cálculo de *Field Tilt* (filtrar passes ![][image21]) e agregar por partida.  
-* **Tarefa 2.3:** Implementar cálculo de PPDA. Exige iterar sobre eventos defensivos e passes adversários com lógica condicional de coordenadas.  
+* **Tarefa 2.1:** Implementar função assign\_zone(x, y) que retorna o ID da zona (1-18) para cada evento. 
+* **Tarefa 2.2:** Desenvolver algoritmo para cálculo de *Field Tilt* (filtrar passes ![][image21]) e agregar por partida. 
+* **Tarefa 2.3:** Implementar cálculo de PPDA. Exige iterar sobre eventos defensivos e passes adversários com lógica condicional de coordenadas. 
 * **Tarefa 2.4:** Gerar a Tabela Mestra (Feature Matrix) onde cada linha é uma partida com as colunas calculadas.
 
 ### **Fase 3: Modelagem e Validação (Semanas 9-12)**
 
-* **Tarefa 3.1:** Dividir o dataset em Treino e Teste. **Importante:** Usar divisão temporal (treinar na primeira metade da temporada, testar na segunda) para simular previsão real e evitar vazamento de dados.  
-* **Tarefa 3.2:** Treinar modelo *baseline* (Regressão Logística). Analisar quais features têm pesos mais altos.  
-* **Tarefa 3.3:** Treinar Random Forest e XGBoost. Comparar acurácia e F1-Score com o *baseline*.  
+* **Tarefa 3.1:** Dividir o dataset em Treino e Teste. **Importante:** Usar divisão temporal (treinar na primeira metade da temporada, testar na segunda) para simular previsão real e evitar vazamento de dados. 
+* **Tarefa 3.2:** Treinar modelo *baseline* (Regressão Logística). Analisar quais features têm pesos mais altos. 
+* **Tarefa 3.3:** Treinar Random Forest e XGBoost. Comparar acurácia e F1-Score com o *baseline*. 
 * **Tarefa 3.4:** Realizar análise de erro: Examinar as partidas onde o modelo errou. Existem padrões? (ex: o modelo falha em jogos com cartões vermelhos precoces?).
 
 Este plano fornece um roteiro tecnicamente robusto, partindo dos fundamentos da engenharia de dados até a aplicação de IA, adequado para demonstrar competência em Engenharia de Computação aplicada a problemas complexos do mundo real.
 
 #### **Referências citadas**
 
-1. StatsBomb Open Data \- VR Software wiki, acessado em janeiro 12, 2026, [https://www.vrwiki.cs.brown.edu/scientific-data/statsbomb-open-data](https://www.vrwiki.cs.brown.edu/scientific-data/statsbomb-open-data)  
-2. Complete guide on working with the StatsBomb Open Data dataset (w/ applications), acessado em janeiro 12, 2026, [https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b](https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b)  
-3. Predictive Modeling of International Football Match Outcomes \- College of Science and Engineering, acessado em janeiro 12, 2026, [https://cse.aua.am/wp-content/uploads/2025/06/Predictive\_Modeling\_of\_International\_Football\_Matches.pdf](https://cse.aua.am/wp-content/uploads/2025/06/Predictive_Modeling_of_International_Football_Matches.pdf)  
-4. User Bias and Algorithmic Accuracy in Football Outcome Prediction: Evidence from the English Premier League, acessado em janeiro 12, 2026, [https://journals.shahroodut.ac.ir/article\_3685\_30ef7673364e5998ba1aa775518b444c.pdf](https://journals.shahroodut.ac.ir/article_3685_30ef7673364e5998ba1aa775518b444c.pdf)  
-5. Predicting Football Match Outcomes Using Event Data and Machine Learning Algorithms \- Training Ground Guru, acessado em janeiro 12, 2026, [https://trainingground.guru/wp-content/uploads/2025/12/Predicting\_Football\_Match\_Outcomes\_Using\_Event\_Data\_and\_Machine\_Learning\_Algorithms.pdf](https://trainingground.guru/wp-content/uploads/2025/12/Predicting_Football_Match_Outcomes_Using_Event_Data_and_Machine_Learning_Algorithms.pdf)  
-6. Predicting Football Match Outcomes Using Event Data and Machine Learning Algorithms \- Pure \- Ulster University's Research Portal, acessado em janeiro 12, 2026, [https://pure.ulster.ac.uk/ws/portalfiles/portal/213544031/2024156785.pdf](https://pure.ulster.ac.uk/ws/portalfiles/portal/213544031/2024156785.pdf)  
-7. Analyze Field Tilt \- Hudl Support, acessado em janeiro 12, 2026, [https://support.hudl.com/s/article/analyze-field-tilt-statsbomb?topic=Statsbomb\_Python\_Tools](https://support.hudl.com/s/article/analyze-field-tilt-statsbomb?topic=Statsbomb_Python_Tools)  
-8. Standardize data — mplsoccer 1.6.1 documentation \- Read the Docs, acessado em janeiro 12, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_plots/plot\_standardize.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_standardize.html)  
-9. Use Statsbombpy with Python \- Hudl Support, acessado em janeiro 12, 2026, [https://support.hudl.com/s/article/use-statsbombpy-python?topic=Statsbomb\_Python\_Tools](https://support.hudl.com/s/article/use-statsbombpy-python?topic=Statsbomb_Python_Tools)  
-10. kloppy \- PyPI, acessado em janeiro 12, 2026, [https://pypi.org/project/kloppy/](https://pypi.org/project/kloppy/)  
-11. Statsbomb with Kloppy \- Kaggle, acessado em janeiro 12, 2026, [https://www.kaggle.com/code/ollibolli/statsbomb-with-kloppy](https://www.kaggle.com/code/ollibolli/statsbomb-with-kloppy)  
-12. Tactical theory: Pitch division \- Total Football Analysis, acessado em janeiro 12, 2026, [https://totalfootballanalysis.com/tactical-theory-pitch-division-tactical-analysis-tactics](https://totalfootballanalysis.com/tactical-theory-pitch-division-tactical-analysis-tactics)  
-13. Zone 14 \- Spielverlagerung.com, acessado em janeiro 12, 2026, [https://spielverlagerung.com/glossary/pitch-zones/zone-14/](https://spielverlagerung.com/glossary/pitch-zones/zone-14/)  
-14. Field Tilt – Football Statistics Explained, acessado em janeiro 12, 2026, [https://the-footballanalyst.com/field-tilt-football-statistics-explained/](https://the-footballanalyst.com/field-tilt-football-statistics-explained/)  
-15. Yet Another Approach of Playing Styles and Performance in Europe's Top 5 Leagues, acessado em janeiro 12, 2026, [https://medium.com/@alf.19x/yet-another-approach-of-playing-styles-and-performance-in-europes-top-5-leagues-87f9960a0c9c](https://medium.com/@alf.19x/yet-another-approach-of-playing-styles-and-performance-in-europes-top-5-leagues-87f9960a0c9c)  
-16. Passes Per Defensive Action (PPDA) \- Hudl Support, acessado em janeiro 12, 2026, [https://support.hudl.com/s/article/passes-defensive-action?](https://support.hudl.com/s/article/passes-defensive-action)  
-17. Defensive Metrics: Measuring the Intensity of a High Press \- Statsbomb Blog Archive, acessado em janeiro 12, 2026, [https://blogarchive.statsbomb.com/articles/soccer/defensive-metrics-measuring-the-intensity-of-a-high-press/](https://blogarchive.statsbomb.com/articles/soccer/defensive-metrics-measuring-the-intensity-of-a-high-press/)  
-18. Teams convex hulls (A) and the representation of the surface areas (B). \- ResearchGate, acessado em janeiro 12, 2026, [https://www.researchgate.net/figure/Teams-convex-hulls-A-and-the-representation-of-the-surface-areas-B\_fig2\_236598517](https://www.researchgate.net/figure/Teams-convex-hulls-A-and-the-representation-of-the-surface-areas-B_fig2_236598517)  
-19. Convex Hulls for Football in Python, acessado em janeiro 12, 2026, [https://fcpython.com/visualisation/convex-hulls-football-python](https://fcpython.com/visualisation/convex-hulls-football-python)  
-20. "Optimizing Sports Outcome Prediction Through Feature Engineering and M" by Vitor S. Freitas \- BearWorks, acessado em janeiro 12, 2026, [https://bearworks.missouristate.edu/theses/4029/](https://bearworks.missouristate.edu/theses/4029/)  
+1. StatsBomb Open Data \- VR Software wiki, acessado em janeiro 12, 2026, [https://www.vrwiki.cs.brown.edu/scientific-data/statsbomb-open-data](https://www.vrwiki.cs.brown.edu/scientific-data/statsbomb-open-data) 
+2. Complete guide on working with the StatsBomb Open Data dataset (w/ applications), acessado em janeiro 12, 2026, [https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b](https://medium.com/@lucascarrasquillaparra/complete-guide-on-working-with-the-statsbomb-open-data-dataset-a57c26d5852b) 
+3. Predictive Modeling of International Football Match Outcomes \- College of Science and Engineering, acessado em janeiro 12, 2026, [https://cse.aua.am/wp-content/uploads/2025/06/Predictive\_Modeling\_of\_International\_Football\_Matches.pdf](https://cse.aua.am/wp-content/uploads/2025/06/Predictive_Modeling_of_International_Football_Matches.pdf) 
+4. User Bias and Algorithmic Accuracy in Football Outcome Prediction: Evidence from the English Premier League, acessado em janeiro 12, 2026, [https://journals.shahroodut.ac.ir/article\_3685\_30ef7673364e5998ba1aa775518b444c.pdf](https://journals.shahroodut.ac.ir/article_3685_30ef7673364e5998ba1aa775518b444c.pdf) 
+5. Predicting Football Match Outcomes Using Event Data and Machine Learning Algorithms \- Training Ground Guru, acessado em janeiro 12, 2026, [https://trainingground.guru/wp-content/uploads/2025/12/Predicting\_Football\_Match\_Outcomes\_Using\_Event\_Data\_and\_Machine\_Learning\_Algorithms.pdf](https://trainingground.guru/wp-content/uploads/2025/12/Predicting_Football_Match_Outcomes_Using_Event_Data_and_Machine_Learning_Algorithms.pdf) 
+6. Predicting Football Match Outcomes Using Event Data and Machine Learning Algorithms \- Pure \- Ulster University's Research Portal, acessado em janeiro 12, 2026, [https://pure.ulster.ac.uk/ws/portalfiles/portal/213544031/2024156785.pdf](https://pure.ulster.ac.uk/ws/portalfiles/portal/213544031/2024156785.pdf) 
+7. Analyze Field Tilt \- Hudl Support, acessado em janeiro 12, 2026, [https://support.hudl.com/s/article/analyze-field-tilt-statsbomb?topic=Statsbomb\_Python\_Tools](https://support.hudl.com/s/article/analyze-field-tilt-statsbomb?topic=Statsbomb_Python_Tools) 
+8. Standardize data — mplsoccer 1.6.1 documentation \- Read the Docs, acessado em janeiro 12, 2026, [https://mplsoccer.readthedocs.io/en/latest/gallery/pitch\_plots/plot\_standardize.html](https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_standardize.html) 
+9. Use Statsbombpy with Python \- Hudl Support, acessado em janeiro 12, 2026, [https://support.hudl.com/s/article/use-statsbombpy-python?topic=Statsbomb\_Python\_Tools](https://support.hudl.com/s/article/use-statsbombpy-python?topic=Statsbomb_Python_Tools) 
+10. kloppy \- PyPI, acessado em janeiro 12, 2026, [https://pypi.org/project/kloppy/](https://pypi.org/project/kloppy/) 
+11. Statsbomb with Kloppy \- Kaggle, acessado em janeiro 12, 2026, [https://www.kaggle.com/code/ollibolli/statsbomb-with-kloppy](https://www.kaggle.com/code/ollibolli/statsbomb-with-kloppy) 
+12. Tactical theory: Pitch division \- Total Football Analysis, acessado em janeiro 12, 2026, [https://totalfootballanalysis.com/tactical-theory-pitch-division-tactical-analysis-tactics](https://totalfootballanalysis.com/tactical-theory-pitch-division-tactical-analysis-tactics) 
+13. Zone 14 \- Spielverlagerung.com, acessado em janeiro 12, 2026, [https://spielverlagerung.com/glossary/pitch-zones/zone-14/](https://spielverlagerung.com/glossary/pitch-zones/zone-14/) 
+14. Field Tilt – Football Statistics Explained, acessado em janeiro 12, 2026, [https://the-footballanalyst.com/field-tilt-football-statistics-explained/](https://the-footballanalyst.com/field-tilt-football-statistics-explained/) 
+15. Yet Another Approach of Playing Styles and Performance in Europe's Top 5 Leagues, acessado em janeiro 12, 2026, [https://medium.com/@alf.19x/yet-another-approach-of-playing-styles-and-performance-in-europes-top-5-leagues-87f9960a0c9c](https://medium.com/@alf.19x/yet-another-approach-of-playing-styles-and-performance-in-europes-top-5-leagues-87f9960a0c9c) 
+16. Passes Per Defensive Action (PPDA) \- Hudl Support, acessado em janeiro 12, 2026, [https://support.hudl.com/s/article/passes-defensive-action?](https://support.hudl.com/s/article/passes-defensive-action) 
+17. Defensive Metrics: Measuring the Intensity of a High Press \- Statsbomb Blog Archive, acessado em janeiro 12, 2026, [https://blogarchive.statsbomb.com/articles/soccer/defensive-metrics-measuring-the-intensity-of-a-high-press/](https://blogarchive.statsbomb.com/articles/soccer/defensive-metrics-measuring-the-intensity-of-a-high-press/) 
+18. Teams convex hulls (A) and the representation of the surface areas (B). \- ResearchGate, acessado em janeiro 12, 2026, [https://www.researchgate.net/figure/Teams-convex-hulls-A-and-the-representation-of-the-surface-areas-B\_fig2\_236598517](https://www.researchgate.net/figure/Teams-convex-hulls-A-and-the-representation-of-the-surface-areas-B_fig2_236598517) 
+19. Convex Hulls for Football in Python, acessado em janeiro 12, 2026, [https://fcpython.com/visualisation/convex-hulls-football-python](https://fcpython.com/visualisation/convex-hulls-football-python) 
+20. "Optimizing Sports Outcome Prediction Through Feature Engineering and M" by Vitor S. Freitas \- BearWorks, acessado em janeiro 12, 2026, [https://bearworks.missouristate.edu/theses/4029/](https://bearworks.missouristate.edu/theses/4029/) 
 21. Predicting Soccer Match Outcomes with Machine Learning Methods, acessado em janeiro 12, 2026, [https://ibima.org/accepted-paper/predicting-soccer-match-outcomes-with-machine-learning-methods/](https://ibima.org/accepted-paper/predicting-soccer-match-outcomes-with-machine-learning-methods/)
 
 [image1]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAAAYCAYAAABurXSEAAAC1UlEQVR4Xu2WS8hNURTH/0J5hoiExIBEISXyyACRVyZSZEAYfVJeEfVNDMgrKQYkShJKiSRFUUQpA49IIZGREsrA4/+/6+zv7rPuvveeO/juNfj+9evcu9c+e6+991prH6BLrVU/0ss3NlENzz+FnCUDvKGJGk2uZM+6Gknukone0ALNIddQZ/O6kWOk3bW3SvLnBNnlDbEmkVfZ83/RTPKSjPGGIK3oBhpMgE7WIPKErPEGSY7K4T3eEGkUWZo9pcFkMRne0aOYepK5ZBrpHrUrHORk3CadJhdg9pw08XuyzBtgnbeSk2QdeUEOkvNkJ3lDxnf0ri0llRzYDhtnQ2SbR77CQiKWIuA+6e/aS6v+QmZ7A7WA7EV5pefIRzIBdjo/YO8X0WbYUY8g75BP+v2wcVXBYmkjtaEVJ6pJP2RPry1kXPa7L7kDq6E9yCyyApVHmpL674NNvpr8RHlXQ3imckpOfyZjXXtNp2PpRQ1QswzVkZy/SB6hXIPDuKmcktPfyGRvKOr0cvIL6TAqqhAaCocgJfRvMj9qC6oaHlrpJ9jLsRTH68kp2PfAcdiEmlgaSo6SPtl/aWBGNWljlAdx0msByRCA5cBbMswbhpDnsESJpY564RmsQjwl92AL0IJ2IF9D1UcJrYSqdiHomHXcwWl9X7xGOp4lhUzSJgf0kaSdjKWaqmpxndwibbBir0S8SnZnfYKU+VrgH6TLp6T+Kp+66c7AbuG/SOeJ4l9zpWwlKaMfwwp8LFUGhUFYqf+f0kZUhlqQKpAcVwhpnJXIV5JYOi0tLmUrSTfcA7LIGxqUducQ0uExFXaB6JaTFGa3YSfZO3SKtJZcQv40K6TqcBnpAYpKiz6AxLUL2/3vZAlsjiOw0/UXiqRNvEmme4NXSC6RmrSetMurUP0bWKFxmDyE1WnlSGqDNHc72Zb9risdhb4NZnhDE7WQbEJBh7vUWfoHSRN2Vlh//2EAAAAASUVORK5CYII=>

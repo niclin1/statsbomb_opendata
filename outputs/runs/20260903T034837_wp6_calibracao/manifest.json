@@ -1,0 +1,655 @@
+{
+  "run_id": "20260903T034837_wp6_calibracao",
+  "nome": "wp6_calibracao",
+  "inicio_utc": "2026-09-03T03:48:37.715496+00:00",
+  "fim_utc": "2026-09-03T03:48:38.961100+00:00",
+  "seed": 42,
+  "dataset": {
+    "caminho": "data/momentum_data.csv",
+    "sha256": "a2b93b33c0182e18de52fda8fcb4c2b42152c0f1b337a803d6638267b29c4300",
+    "bytes": 961800
+  },
+  "git": {
+    "commit": "f8ed5b70c503190738502428b96c872cbc29d84a",
+    "sujo": true
+  },
+  "bibliotecas": {
+    "python": "3.12.10",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "scikit-learn": "1.8.0",
+    "scipy": "1.17.1",
+    "xgboost": "3.4.0",
+    "optuna": "4.8.0",
+    "shap": "0.51.0",
+    "pyyaml": "6.0.3"
+  },
+  "config": {
+    "meta": {
+      "projeto": "Predição de resultado de partidas a partir do momento tático do 1º tempo",
+      "versao_config": 1,
+      "data_decisoes": "2026-08-10",
+      "decisoes": {
+        "D1": "Domínio primário = 5 grandes ligas europeias 2015/16, split temporal por data. Demais blocos = validação externa. (achado A9)",
+        "D2": "is_home entra no modelo principal (12 atributos); ablação 11 × 12 no WP2. (achado A6)",
+        "D2_revisada": "11/08/2026 — REVERTIDA pelo WP2: modelo principal = 11 atributos táticos. is_home tem efeito nulo (-0,20 p.p. de F1 macro, 3/5 dobras) porque os atributos táticos já codificam o mando de campo (AUC 0,674 para prever is_home a partir deles). Fica como baseline a superar e como ablação documentada. Registro completo em _planning/decisoes_e_caminhos_explorados.md §4",
+        "D3": "Indian Super League mantida na base, fora do domínio primário, como validação externa de nível de liga. (achado A4)",
+        "D4": "Formulação espelhada por equipe mantida (contrato do TCC I); agrupamento por match_id obrigatório; n efetivo = 2.635. (achado A7)"
+      }
+    },
+    "seed": 42,
+    "caminhos": {
+      "dataset": "data/momentum_data.csv",
+      "processed_dir": "data/processed",
+      "runs_dir": "outputs/runs",
+      "tabelas_dir": "outputs/tabelas",
+      "figuras_dir": "outputs/figuras"
+    },
+    "dataset": {
+      "chave_partida": "match_id",
+      "coluna_data": "match_date",
+      "alvo": "target_multiclass",
+      "linhas_por_partida": 2,
+      "classes": {
+        "0": "Derrota",
+        "1": "Empate",
+        "2": "Vitória"
+      },
+      "esperado": {
+        "linhas": 5270,
+        "partidas": 2635,
+        "data_min": "2010-08-29",
+        "data_max": "2024-07-15"
+      }
+    },
+    "competicoes": {
+      "2": {
+        "nome": "Premier League",
+        "dominio": "clubes"
+      },
+      "7": {
+        "nome": "Ligue 1",
+        "dominio": "clubes"
+      },
+      "9": {
+        "nome": "1. Bundesliga",
+        "dominio": "clubes"
+      },
+      "11": {
+        "nome": "La Liga",
+        "dominio": "clubes"
+      },
+      "12": {
+        "nome": "Serie A",
+        "dominio": "clubes"
+      },
+      "1238": {
+        "nome": "Indian Super League",
+        "dominio": "clubes"
+      },
+      "43": {
+        "nome": "Copa do Mundo FIFA",
+        "dominio": "selecoes"
+      },
+      "55": {
+        "nome": "Eurocopa",
+        "dominio": "selecoes"
+      },
+      "223": {
+        "nome": "Copa América",
+        "dominio": "selecoes"
+      }
+    },
+    "features": {
+      "taticos": [
+        "xg_0_15",
+        "ppda_0_15",
+        "field_tilt_0_15",
+        "xg_15_30",
+        "ppda_15_30",
+        "field_tilt_15_30",
+        "xg_30_45",
+        "ppda_30_45",
+        "field_tilt_30_45"
+      ],
+      "cartoes": [
+        "team_red_cards_p1",
+        "opp_red_cards_p1"
+      ],
+      "contexto": [
+        "is_home"
+      ],
+      "taticos_45_60": [
+        "xg_45_60",
+        "ppda_45_60",
+        "field_tilt_45_60"
+      ],
+      "taticos_60_75": [
+        "xg_60_75",
+        "ppda_60_75",
+        "field_tilt_60_75"
+      ],
+      "taticos_75_90": [
+        "xg_75_90",
+        "ppda_75_90",
+        "field_tilt_75_90"
+      ],
+      "cartoes_2t": [
+        "team_red_cards_p2",
+        "opp_red_cards_p2"
+      ],
+      "conjuntos": {
+        "tatico_11": [
+          "taticos",
+          "cartoes"
+        ],
+        "completo_12": [
+          "taticos",
+          "cartoes",
+          "contexto"
+        ],
+        "p5_1t": [
+          "taticos",
+          "cartoes"
+        ],
+        "p5_ate_60": [
+          "taticos",
+          "cartoes",
+          "taticos_45_60"
+        ],
+        "p5_ate_75": [
+          "taticos",
+          "cartoes",
+          "taticos_45_60",
+          "taticos_60_75"
+        ],
+        "p5_ate_90": [
+          "taticos",
+          "cartoes",
+          "taticos_45_60",
+          "taticos_60_75",
+          "taticos_75_90",
+          "cartoes_2t"
+        ]
+      },
+      "conjunto_principal": "tatico_11"
+    },
+    "particao": {
+      "dominio_primario": {
+        "nome": "Cinco grandes ligas europeias — temporada 2015/16",
+        "competition_ids": [
+          2,
+          7,
+          9,
+          11,
+          12
+        ],
+        "season_ids": [
+          27
+        ],
+        "partidas_esperadas": 1823,
+        "split": {
+          "tipo": "temporal_por_data",
+          "fracoes": {
+            "treino": 0.65,
+            "validacao": 0.15,
+            "teste": 0.2
+          }
+        }
+      },
+      "validacao_externa": {
+        "ext_elite_pos2016": {
+          "nome": "Clubes de elite pós-2016 (Barcelona, PSG, Leverkusen)",
+          "mede": "deslocamento temporal + viés de equipe de elite",
+          "competition_ids": [
+            2,
+            7,
+            9,
+            11,
+            12
+          ],
+          "data_min": "2016-06-01",
+          "partidas_esperadas": 264
+        },
+        "ext_laliga_2010_2015": {
+          "nome": "La Liga 2010–2015 (Barcelona)",
+          "mede": "deslocamento temporal para o passado",
+          "competition_ids": [
+            11
+          ],
+          "season_ids": [
+            22,
+            23,
+            24,
+            25,
+            26
+          ],
+          "partidas_esperadas": 171
+        },
+        "ext_isl_2021_22": {
+          "nome": "Indian Super League 2021/22",
+          "mede": "deslocamento de liga / nível técnico",
+          "competition_ids": [
+            1238
+          ],
+          "partidas_esperadas": 115
+        },
+        "ext_selecoes": {
+          "nome": "Torneios de seleções (Copa 2018, Euro 2020, Copa 2022, Euro 2024, Copa América 2024)",
+          "mede": "deslocamento de população",
+          "competition_ids": [
+            43,
+            55,
+            223
+          ],
+          "partidas_esperadas": 262
+        }
+      }
+    },
+    "baselines": [
+      "acaso_uniforme",
+      "classe_majoritaria",
+      "mando_de_campo"
+    ],
+    "modelo": {
+      "tipo": "xgboost",
+      "objective": "multi:softprob",
+      "num_class": 3,
+      "eval_metric": "mlogloss",
+      "params_default": {
+        "max_depth": 6,
+        "eta": 0.3,
+        "num_boost_round": 100
+      }
+    },
+    "otimizacao": {
+      "n_trials": 50,
+      "direcao": "maximize",
+      "metricas": [
+        "f1_macro",
+        "acuracia"
+      ],
+      "metrica_principal": "f1_macro",
+      "janela": [
+        "treino",
+        "validacao"
+      ],
+      "conjuntos": [
+        "tatico_11",
+        "completo_12"
+      ],
+      "validacao": {
+        "tipo": "kfold_agrupado_estratificado",
+        "n_splits": 5,
+        "chave_grupo": "match_id"
+      },
+      "espaco": {
+        "num_boost_round": {
+          "tipo": "int",
+          "low": 50,
+          "high": 800
+        },
+        "eta": {
+          "tipo": "float",
+          "low": 0.01,
+          "high": 0.3,
+          "log": true
+        },
+        "max_depth": {
+          "tipo": "int",
+          "low": 2,
+          "high": 8
+        },
+        "min_child_weight": {
+          "tipo": "int",
+          "low": 1,
+          "high": 20
+        },
+        "subsample": {
+          "tipo": "float",
+          "low": 0.6,
+          "high": 1.0
+        },
+        "colsample_bytree": {
+          "tipo": "float",
+          "low": 0.5,
+          "high": 1.0
+        },
+        "lambda": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "alpha": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "gamma": {
+          "tipo": "float",
+          "low": 1e-08,
+          "high": 1.0,
+          "log": true
+        },
+        "balanceamento": {
+          "tipo": "categorico",
+          "escolhas": [
+            "nenhum",
+            "balanceado"
+          ]
+        }
+      }
+    },
+    "wp5": {
+      "conjuntos": [
+        "p5_1t",
+        "p5_ate_60",
+        "p5_ate_75",
+        "p5_ate_90"
+      ],
+      "n_trials": 30
+    },
+    "comparativo": [
+      "classe_majoritaria",
+      "mando_de_campo",
+      "regressao_logistica",
+      "xgboost_default",
+      "xgboost_otimizado"
+    ],
+    "_arquivo_config": "config\\experiment.yaml"
+  },
+  "wp6": {
+    "disponibilidade_copa_2026": {
+      "consulta_ok": true,
+      "temporadas_de_copa_disponiveis": [
+        "1958",
+        "1962",
+        "1970",
+        "1974",
+        "1979",
+        "1986",
+        "1990",
+        "2018",
+        "2019",
+        "2022",
+        "2023"
+      ],
+      "copa_2026_disponivel": false,
+      "competicoes_no_catalogo": 80
+    },
+    "modelo": "modelo_tatico_11_f1_macro.ubj",
+    "run_wp2": "20260818T223606_wp2_otimizacao",
+    "n_faixas_ece": 10,
+    "calibracao": [
+      {
+        "Partição": "teste",
+        "Partidas": 340,
+        "Brier": 0.6228,
+        "ECE (%)": 2.49,
+        "Confiança média (%)": 47.05,
+        "Acerto (%)": 46.18,
+        "Excesso de confiança (p.p.)": 0.88
+      },
+      {
+        "Partição": "ext_elite_pos2016",
+        "Partidas": 264,
+        "Brier": 0.523,
+        "ECE (%)": 10.89,
+        "Confiança média (%)": 52.31,
+        "Acerto (%)": 60.04,
+        "Excesso de confiança (p.p.)": -7.72
+      },
+      {
+        "Partição": "ext_laliga_2010_2015",
+        "Partidas": 171,
+        "Brier": 0.4749,
+        "ECE (%)": 15.01,
+        "Confiança média (%)": 54.65,
+        "Acerto (%)": 68.71,
+        "Excesso de confiança (p.p.)": -14.07
+      },
+      {
+        "Partição": "ext_isl_2021_22",
+        "Partidas": 115,
+        "Brier": 0.6233,
+        "ECE (%)": 4.39,
+        "Confiança média (%)": 47.58,
+        "Acerto (%)": 49.13,
+        "Excesso de confiança (p.p.)": -1.55
+      },
+      {
+        "Partição": "ext_selecoes",
+        "Partidas": 262,
+        "Brier": 0.5998,
+        "ECE (%)": 4.55,
+        "Confiança média (%)": 49.57,
+        "Acerto (%)": 48.85,
+        "Excesso de confiança (p.p.)": 0.72
+      }
+    ],
+    "faixas_por_particao": {
+      "teste": [
+        {
+          "faixa": "(0.3, 0.4]",
+          "n": 199,
+          "confiança média": 37.64,
+          "acerto observado": 34.67,
+          "desvio": -2.97
+        },
+        {
+          "faixa": "(0.4, 0.5]",
+          "n": 285,
+          "confiança média": 44.04,
+          "acerto observado": 42.46,
+          "desvio": -1.59
+        },
+        {
+          "faixa": "(0.5, 0.6]",
+          "n": 99,
+          "confiança média": 54.38,
+          "acerto observado": 58.59,
+          "desvio": 4.2
+        },
+        {
+          "faixa": "(0.6, 0.7]",
+          "n": 66,
+          "confiança média": 64.22,
+          "acerto observado": 65.15,
+          "desvio": 0.93
+        },
+        {
+          "faixa": "(0.7, 0.8]",
+          "n": 27,
+          "confiança média": 74.19,
+          "acerto observado": 70.37,
+          "desvio": -3.82
+        },
+        {
+          "faixa": "(0.8, 0.9]",
+          "n": 4,
+          "confiança média": 82.02,
+          "acerto observado": 100.0,
+          "desvio": 17.98
+        }
+      ],
+      "ext_elite_pos2016": [
+        {
+          "faixa": "(0.3, 0.4]",
+          "n": 93,
+          "confiança média": 37.42,
+          "acerto observado": 30.11,
+          "desvio": -7.31
+        },
+        {
+          "faixa": "(0.4, 0.5]",
+          "n": 170,
+          "confiança média": 44.37,
+          "acerto observado": 50.0,
+          "desvio": 5.63
+        },
+        {
+          "faixa": "(0.5, 0.6]",
+          "n": 117,
+          "confiança média": 54.69,
+          "acerto observado": 71.79,
+          "desvio": 17.11
+        },
+        {
+          "faixa": "(0.6, 0.7]",
+          "n": 88,
+          "confiança média": 64.61,
+          "acerto observado": 80.68,
+          "desvio": 16.07
+        },
+        {
+          "faixa": "(0.7, 0.8]",
+          "n": 52,
+          "confiança média": 74.22,
+          "acerto observado": 84.62,
+          "desvio": 10.4
+        },
+        {
+          "faixa": "(0.8, 0.9]",
+          "n": 8,
+          "confiança média": 81.92,
+          "acerto observado": 62.5,
+          "desvio": -19.42
+        }
+      ],
+      "ext_laliga_2010_2015": [
+        {
+          "faixa": "(0.3, 0.4]",
+          "n": 50,
+          "confiança média": 37.21,
+          "acerto observado": 34.0,
+          "desvio": -3.21
+        },
+        {
+          "faixa": "(0.4, 0.5]",
+          "n": 90,
+          "confiança média": 44.02,
+          "acerto observado": 60.0,
+          "desvio": 15.98
+        },
+        {
+          "faixa": "(0.5, 0.6]",
+          "n": 92,
+          "confiança média": 54.98,
+          "acerto observado": 78.26,
+          "desvio": 23.28
+        },
+        {
+          "faixa": "(0.6, 0.7]",
+          "n": 54,
+          "confiança média": 65.11,
+          "acerto observado": 77.78,
+          "desvio": 12.67
+        },
+        {
+          "faixa": "(0.7, 0.8]",
+          "n": 42,
+          "confiança média": 74.54,
+          "acerto observado": 88.1,
+          "desvio": 13.55
+        },
+        {
+          "faixa": "(0.8, 0.9]",
+          "n": 14,
+          "confiança média": 83.02,
+          "acerto observado": 92.86,
+          "desvio": 9.84
+        }
+      ],
+      "ext_isl_2021_22": [
+        {
+          "faixa": "(0.3, 0.4]",
+          "n": 58,
+          "confiança média": 37.98,
+          "acerto observado": 34.48,
+          "desvio": -3.49
+        },
+        {
+          "faixa": "(0.4, 0.5]",
+          "n": 100,
+          "confiança média": 44.02,
+          "acerto observado": 50.0,
+          "desvio": 5.98
+        },
+        {
+          "faixa": "(0.5, 0.6]",
+          "n": 41,
+          "confiança média": 54.11,
+          "acerto observado": 56.1,
+          "desvio": 1.99
+        },
+        {
+          "faixa": "(0.6, 0.7]",
+          "n": 20,
+          "confiança média": 64.83,
+          "acerto observado": 65.0,
+          "desvio": 0.17
+        },
+        {
+          "faixa": "(0.7, 0.8]",
+          "n": 9,
+          "confiança média": 73.26,
+          "acerto observado": 66.67,
+          "desvio": -6.6
+        },
+        {
+          "faixa": "(0.8, 0.9]",
+          "n": 2,
+          "confiança média": 82.44,
+          "acerto observado": 50.0,
+          "desvio": -32.44
+        }
+      ],
+      "ext_selecoes": [
+        {
+          "faixa": "(0.3, 0.4]",
+          "n": 122,
+          "confiança média": 37.66,
+          "acerto observado": 35.25,
+          "desvio": -2.41
+        },
+        {
+          "faixa": "(0.4, 0.5]",
+          "n": 189,
+          "confiança média": 44.03,
+          "acerto observado": 40.21,
+          "desvio": -3.82
+        },
+        {
+          "faixa": "(0.5, 0.6]",
+          "n": 110,
+          "confiança média": 54.58,
+          "acerto observado": 60.91,
+          "desvio": 6.32
+        },
+        {
+          "faixa": "(0.6, 0.7]",
+          "n": 68,
+          "confiança média": 64.51,
+          "acerto observado": 60.29,
+          "desvio": -4.22
+        },
+        {
+          "faixa": "(0.7, 0.8]",
+          "n": 28,
+          "confiança média": 74.71,
+          "acerto observado": 85.71,
+          "desvio": 11.01
+        },
+        {
+          "faixa": "(0.8, 0.9]",
+          "n": 7,
+          "confiança média": 82.22,
+          "acerto observado": 71.43,
+          "desvio": -10.79
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,419 @@
+{
+  "run_id": "20260904T023603_diag_atributos_adversario",
+  "nome": "diag_atributos_adversario",
+  "inicio_utc": "2026-09-04T02:36:03.520937+00:00",
+  "fim_utc": "2026-09-04T02:39:29.370200+00:00",
+  "seed": 42,
+  "dataset": {
+    "caminho": "data/momentum_data.csv",
+    "sha256": "a2b93b33c0182e18de52fda8fcb4c2b42152c0f1b337a803d6638267b29c4300",
+    "bytes": 961800
+  },
+  "git": {
+    "commit": "f8ed5b70c503190738502428b96c872cbc29d84a",
+    "sujo": true
+  },
+  "bibliotecas": {
+    "python": "3.12.10",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "scikit-learn": "1.8.0",
+    "scipy": "1.17.1",
+    "xgboost": "3.4.0",
+    "optuna": "4.8.0",
+    "shap": "0.51.0",
+    "pyyaml": "6.0.3"
+  },
+  "config": {
+    "meta": {
+      "projeto": "Predição de resultado de partidas a partir do momento tático do 1º tempo",
+      "versao_config": 1,
+      "data_decisoes": "2026-08-10",
+      "decisoes": {
+        "D1": "Domínio primário = 5 grandes ligas europeias 2015/16, split temporal por data. Demais blocos = validação externa. (achado A9)",
+        "D2": "is_home entra no modelo principal (12 atributos); ablação 11 × 12 no WP2. (achado A6)",
+        "D2_revisada": "11/08/2026 — REVERTIDA pelo WP2: modelo principal = 11 atributos táticos. is_home tem efeito nulo (-0,20 p.p. de F1 macro, 3/5 dobras) porque os atributos táticos já codificam o mando de campo (AUC 0,674 para prever is_home a partir deles). Fica como baseline a superar e como ablação documentada. Registro completo em _planning/decisoes_e_caminhos_explorados.md §4",
+        "D3": "Indian Super League mantida na base, fora do domínio primário, como validação externa de nível de liga. (achado A4)",
+        "D4": "Formulação espelhada por equipe mantida (contrato do TCC I); agrupamento por match_id obrigatório; n efetivo = 2.635. (achado A7)"
+      }
+    },
+    "seed": 42,
+    "caminhos": {
+      "dataset": "data/momentum_data.csv",
+      "processed_dir": "data/processed",
+      "runs_dir": "outputs/runs",
+      "tabelas_dir": "outputs/tabelas",
+      "figuras_dir": "outputs/figuras"
+    },
+    "dataset": {
+      "chave_partida": "match_id",
+      "coluna_data": "match_date",
+      "alvo": "target_multiclass",
+      "linhas_por_partida": 2,
+      "classes": {
+        "0": "Derrota",
+        "1": "Empate",
+        "2": "Vitória"
+      },
+      "esperado": {
+        "linhas": 5270,
+        "partidas": 2635,
+        "data_min": "2010-08-29",
+        "data_max": "2024-07-15"
+      }
+    },
+    "competicoes": {
+      "2": {
+        "nome": "Premier League",
+        "dominio": "clubes"
+      },
+      "7": {
+        "nome": "Ligue 1",
+        "dominio": "clubes"
+      },
+      "9": {
+        "nome": "1. Bundesliga",
+        "dominio": "clubes"
+      },
+      "11": {
+        "nome": "La Liga",
+        "dominio": "clubes"
+      },
+      "12": {
+        "nome": "Serie A",
+        "dominio": "clubes"
+      },
+      "1238": {
+        "nome": "Indian Super League",
+        "dominio": "clubes"
+      },
+      "43": {
+        "nome": "Copa do Mundo FIFA",
+        "dominio": "selecoes"
+      },
+      "55": {
+        "nome": "Eurocopa",
+        "dominio": "selecoes"
+      },
+      "223": {
+        "nome": "Copa América",
+        "dominio": "selecoes"
+      }
+    },
+    "features": {
+      "taticos": [
+        "xg_0_15",
+        "ppda_0_15",
+        "field_tilt_0_15",
+        "xg_15_30",
+        "ppda_15_30",
+        "field_tilt_15_30",
+        "xg_30_45",
+        "ppda_30_45",
+        "field_tilt_30_45"
+      ],
+      "cartoes": [
+        "team_red_cards_p1",
+        "opp_red_cards_p1"
+      ],
+      "contexto": [
+        "is_home"
+      ],
+      "taticos_45_60": [
+        "xg_45_60",
+        "ppda_45_60",
+        "field_tilt_45_60"
+      ],
+      "taticos_60_75": [
+        "xg_60_75",
+        "ppda_60_75",
+        "field_tilt_60_75"
+      ],
+      "taticos_75_90": [
+        "xg_75_90",
+        "ppda_75_90",
+        "field_tilt_75_90"
+      ],
+      "cartoes_2t": [
+        "team_red_cards_p2",
+        "opp_red_cards_p2"
+      ],
+      "conjuntos": {
+        "tatico_11": [
+          "taticos",
+          "cartoes"
+        ],
+        "completo_12": [
+          "taticos",
+          "cartoes",
+          "contexto"
+        ],
+        "p5_1t": [
+          "taticos",
+          "cartoes"
+        ],
+        "p5_ate_60": [
+          "taticos",
+          "cartoes",
+          "taticos_45_60"
+        ],
+        "p5_ate_75": [
+          "taticos",
+          "cartoes",
+          "taticos_45_60",
+          "taticos_60_75"
+        ],
+        "p5_ate_90": [
+          "taticos",
+          "cartoes",
+          "taticos_45_60",
+          "taticos_60_75",
+          "taticos_75_90",
+          "cartoes_2t"
+        ]
+      },
+      "conjunto_principal": "tatico_11"
+    },
+    "particao": {
+      "dominio_primario": {
+        "nome": "Cinco grandes ligas europeias — temporada 2015/16",
+        "competition_ids": [
+          2,
+          7,
+          9,
+          11,
+          12
+        ],
+        "season_ids": [
+          27
+        ],
+        "partidas_esperadas": 1823,
+        "split": {
+          "tipo": "temporal_por_data",
+          "fracoes": {
+            "treino": 0.65,
+            "validacao": 0.15,
+            "teste": 0.2
+          }
+        }
+      },
+      "validacao_externa": {
+        "ext_elite_pos2016": {
+          "nome": "Clubes de elite pós-2016 (Barcelona, PSG, Leverkusen)",
+          "mede": "deslocamento temporal + viés de equipe de elite",
+          "competition_ids": [
+            2,
+            7,
+            9,
+            11,
+            12
+          ],
+          "data_min": "2016-06-01",
+          "partidas_esperadas": 264
+        },
+        "ext_laliga_2010_2015": {
+          "nome": "La Liga 2010–2015 (Barcelona)",
+          "mede": "deslocamento temporal para o passado",
+          "competition_ids": [
+            11
+          ],
+          "season_ids": [
+            22,
+            23,
+            24,
+            25,
+            26
+          ],
+          "partidas_esperadas": 171
+        },
+        "ext_isl_2021_22": {
+          "nome": "Indian Super League 2021/22",
+          "mede": "deslocamento de liga / nível técnico",
+          "competition_ids": [
+            1238
+          ],
+          "partidas_esperadas": 115
+        },
+        "ext_selecoes": {
+          "nome": "Torneios de seleções (Copa 2018, Euro 2020, Copa 2022, Euro 2024, Copa América 2024)",
+          "mede": "deslocamento de população",
+          "competition_ids": [
+            43,
+            55,
+            223
+          ],
+          "partidas_esperadas": 262
+        }
+      }
+    },
+    "baselines": [
+      "acaso_uniforme",
+      "classe_majoritaria",
+      "mando_de_campo"
+    ],
+    "modelo": {
+      "tipo": "xgboost",
+      "objective": "multi:softprob",
+      "num_class": 3,
+      "eval_metric": "mlogloss",
+      "params_default": {
+        "max_depth": 6,
+        "eta": 0.3,
+        "num_boost_round": 100
+      }
+    },
+    "otimizacao": {
+      "n_trials": 50,
+      "direcao": "maximize",
+      "metricas": [
+        "f1_macro",
+        "acuracia"
+      ],
+      "metrica_principal": "f1_macro",
+      "janela": [
+        "treino",
+        "validacao"
+      ],
+      "conjuntos": [
+        "tatico_11",
+        "completo_12"
+      ],
+      "validacao": {
+        "tipo": "kfold_agrupado_estratificado",
+        "n_splits": 5,
+        "chave_grupo": "match_id"
+      },
+      "espaco": {
+        "num_boost_round": {
+          "tipo": "int",
+          "low": 50,
+          "high": 800
+        },
+        "eta": {
+          "tipo": "float",
+          "low": 0.01,
+          "high": 0.3,
+          "log": true
+        },
+        "max_depth": {
+          "tipo": "int",
+          "low": 2,
+          "high": 8
+        },
+        "min_child_weight": {
+          "tipo": "int",
+          "low": 1,
+          "high": 20
+        },
+        "subsample": {
+          "tipo": "float",
+          "low": 0.6,
+          "high": 1.0
+        },
+        "colsample_bytree": {
+          "tipo": "float",
+          "low": 0.5,
+          "high": 1.0
+        },
+        "lambda": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "alpha": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "gamma": {
+          "tipo": "float",
+          "low": 1e-08,
+          "high": 1.0,
+          "log": true
+        },
+        "balanceamento": {
+          "tipo": "categorico",
+          "escolhas": [
+            "nenhum",
+            "balanceado"
+          ]
+        }
+      }
+    },
+    "wp5": {
+      "conjuntos": [
+        "p5_1t",
+        "p5_ate_60",
+        "p5_ate_75",
+        "p5_ate_90"
+      ],
+      "n_trials": 30
+    },
+    "comparativo": [
+      "classe_majoritaria",
+      "mando_de_campo",
+      "regressao_logistica",
+      "xgboost_default",
+      "xgboost_otimizado"
+    ],
+    "_arquivo_config": "config\\experiment.yaml"
+  },
+  "diagnostico": {
+    "motivacao": "reconciliação 18 declarados × 11 implementados",
+    "colunas_derivadas": [
+      "adv_xg_0_15",
+      "adv_xg_15_30",
+      "adv_xg_30_45",
+      "adv_ppda_0_15",
+      "adv_ppda_15_30",
+      "adv_ppda_30_45"
+    ],
+    "n_trials": 30,
+    "comparativo": [
+      {
+        "Conjunto": "tatico_11 (atual)",
+        "Atributos": 11,
+        "acuracia": 48.14,
+        "f1_macro": 46.28,
+        "f1_Derrota": 53.52,
+        "f1_Empate": 29.29,
+        "f1_Vitória": 56.03,
+        "log_loss": 1.02
+      },
+      {
+        "Conjunto": "tatico_17 (+ adversário)",
+        "Atributos": 17,
+        "acuracia": 49.99,
+        "f1_macro": 48.53,
+        "f1_Derrota": 56.55,
+        "f1_Empate": 32.61,
+        "f1_Vitória": 56.43,
+        "log_loss": 0.99
+      }
+    ],
+    "ganho_emparelhado": {
+      "acuracia": {
+        "media": 1.85,
+        "dobras_a_favor": "3/5"
+      },
+      "f1_macro": {
+        "media": 2.25,
+        "dobras_a_favor": "4/5"
+      },
+      "f1_Empate": {
+        "media": 3.33,
+        "dobras_a_favor": "4/5"
+      },
+      "f1_Derrota": {
+        "media": 3.03,
+        "dobras_a_favor": "4/5"
+      },
+      "f1_Vitória": {
+        "media": 0.39,
+        "dobras_a_favor": "3/5"
+      }
+    }
+  }
+}

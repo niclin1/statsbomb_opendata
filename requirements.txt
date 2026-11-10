@@ -1,7 +1,29 @@
-statsbombpy
-pandas
-numpy
-scikit-learn
-scipy
-mplsoccer
-notebook
+# Ambiente do TCC II — versões fixadas (achado A10).
+# O requirements anterior não listava xgboost, optuna nem shap: o núcleo do experimento.
+# Resultado prático: o ~56% do TCC I não era reproduzível a partir do repositório.
+# As versões abaixo são registradas em outputs/runs/<run_id>/manifest.json a cada run.
+
+# ETL / dados
+statsbombpy==1.17.0
+requests-cache==1.3.1
+pandas==3.0.2
+numpy==2.4.4
+pyarrow==25.0.1
+PyYAML==6.0.3
+
+# modelagem
+xgboost==3.4.0
+scikit-learn==1.8.0
+scipy==1.17.1
+optuna==4.8.0
+
+# explicabilidade e figuras
+shap==0.51.0
+matplotlib==3.10.8
+mplsoccer==1.6.1
+
+# qualidade
+pytest==9.1.1
+
+# exploração
+notebook==7.5.5

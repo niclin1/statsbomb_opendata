@@ -1,0 +1,1193 @@
+{
+  "run_id": "20260903T030017_wp3_avaliacao_teste",
+  "nome": "wp3_avaliacao_teste",
+  "inicio_utc": "2026-09-03T03:00:17.970968+00:00",
+  "fim_utc": "2026-09-03T03:00:44.381399+00:00",
+  "seed": 42,
+  "dataset": {
+    "caminho": "data/momentum_data.csv",
+    "sha256": "a2b93b33c0182e18de52fda8fcb4c2b42152c0f1b337a803d6638267b29c4300",
+    "bytes": 961800
+  },
+  "git": {
+    "commit": "f8ed5b70c503190738502428b96c872cbc29d84a",
+    "sujo": true
+  },
+  "bibliotecas": {
+    "python": "3.12.10",
+    "numpy": "2.4.4",
+    "pandas": "3.0.2",
+    "scikit-learn": "1.8.0",
+    "scipy": "1.17.1",
+    "xgboost": "3.4.0",
+    "optuna": "4.8.0",
+    "shap": "0.51.0",
+    "pyyaml": "6.0.3"
+  },
+  "config": {
+    "meta": {
+      "projeto": "Predição de resultado de partidas a partir do momento tático do 1º tempo",
+      "versao_config": 1,
+      "data_decisoes": "2026-08-10",
+      "decisoes": {
+        "D1": "Domínio primário = 5 grandes ligas europeias 2015/16, split temporal por data. Demais blocos = validação externa. (achado A9)",
+        "D2": "is_home entra no modelo principal (12 atributos); ablação 11 × 12 no WP2. (achado A6)",
+        "D2_revisada": "11/08/2026 — REVERTIDA pelo WP2: modelo principal = 11 atributos táticos. is_home tem efeito nulo (-0,20 p.p. de F1 macro, 3/5 dobras) porque os atributos táticos já codificam o mando de campo (AUC 0,674 para prever is_home a partir deles). Fica como baseline a superar e como ablação documentada. Registro completo em _planning/decisoes_e_caminhos_explorados.md §4",
+        "D3": "Indian Super League mantida na base, fora do domínio primário, como validação externa de nível de liga. (achado A4)",
+        "D4": "Formulação espelhada por equipe mantida (contrato do TCC I); agrupamento por match_id obrigatório; n efetivo = 2.635. (achado A7)"
+      }
+    },
+    "seed": 42,
+    "caminhos": {
+      "dataset": "data/momentum_data.csv",
+      "processed_dir": "data/processed",
+      "runs_dir": "outputs/runs",
+      "tabelas_dir": "outputs/tabelas",
+      "figuras_dir": "outputs/figuras"
+    },
+    "dataset": {
+      "chave_partida": "match_id",
+      "coluna_data": "match_date",
+      "alvo": "target_multiclass",
+      "linhas_por_partida": 2,
+      "classes": {
+        "0": "Derrota",
+        "1": "Empate",
+        "2": "Vitória"
+      },
+      "esperado": {
+        "linhas": 5270,
+        "partidas": 2635,
+        "data_min": "2010-08-29",
+        "data_max": "2024-07-15"
+      }
+    },
+    "competicoes": {
+      "2": {
+        "nome": "Premier League",
+        "dominio": "clubes"
+      },
+      "7": {
+        "nome": "Ligue 1",
+        "dominio": "clubes"
+      },
+      "9": {
+        "nome": "1. Bundesliga",
+        "dominio": "clubes"
+      },
+      "11": {
+        "nome": "La Liga",
+        "dominio": "clubes"
+      },
+      "12": {
+        "nome": "Serie A",
+        "dominio": "clubes"
+      },
+      "1238": {
+        "nome": "Indian Super League",
+        "dominio": "clubes"
+      },
+      "43": {
+        "nome": "Copa do Mundo FIFA",
+        "dominio": "selecoes"
+      },
+      "55": {
+        "nome": "Eurocopa",
+        "dominio": "selecoes"
+      },
+      "223": {
+        "nome": "Copa América",
+        "dominio": "selecoes"
+      }
+    },
+    "features": {
+      "taticos": [
+        "xg_0_15",
+        "ppda_0_15",
+        "field_tilt_0_15",
+        "xg_15_30",
+        "ppda_15_30",
+        "field_tilt_15_30",
+        "xg_30_45",
+        "ppda_30_45",
+        "field_tilt_30_45"
+      ],
+      "cartoes": [
+        "team_red_cards_p1",
+        "opp_red_cards_p1"
+      ],
+      "contexto": [
+        "is_home"
+      ],
+      "conjuntos": {
+        "tatico_11": [
+          "taticos",
+          "cartoes"
+        ],
+        "completo_12": [
+          "taticos",
+          "cartoes",
+          "contexto"
+        ]
+      },
+      "conjunto_principal": "tatico_11"
+    },
+    "particao": {
+      "dominio_primario": {
+        "nome": "Cinco grandes ligas europeias — temporada 2015/16",
+        "competition_ids": [
+          2,
+          7,
+          9,
+          11,
+          12
+        ],
+        "season_ids": [
+          27
+        ],
+        "partidas_esperadas": 1823,
+        "split": {
+          "tipo": "temporal_por_data",
+          "fracoes": {
+            "treino": 0.65,
+            "validacao": 0.15,
+            "teste": 0.2
+          }
+        }
+      },
+      "validacao_externa": {
+        "ext_elite_pos2016": {
+          "nome": "Clubes de elite pós-2016 (Barcelona, PSG, Leverkusen)",
+          "mede": "deslocamento temporal + viés de equipe de elite",
+          "competition_ids": [
+            2,
+            7,
+            9,
+            11,
+            12
+          ],
+          "data_min": "2016-06-01",
+          "partidas_esperadas": 264
+        },
+        "ext_laliga_2010_2015": {
+          "nome": "La Liga 2010–2015 (Barcelona)",
+          "mede": "deslocamento temporal para o passado",
+          "competition_ids": [
+            11
+          ],
+          "season_ids": [
+            22,
+            23,
+            24,
+            25,
+            26
+          ],
+          "partidas_esperadas": 171
+        },
+        "ext_isl_2021_22": {
+          "nome": "Indian Super League 2021/22",
+          "mede": "deslocamento de liga / nível técnico",
+          "competition_ids": [
+            1238
+          ],
+          "partidas_esperadas": 115
+        },
+        "ext_selecoes": {
+          "nome": "Torneios de seleções (Copa 2018, Euro 2020, Copa 2022, Euro 2024, Copa América 2024)",
+          "mede": "deslocamento de população",
+          "competition_ids": [
+            43,
+            55,
+            223
+          ],
+          "partidas_esperadas": 262
+        }
+      }
+    },
+    "baselines": [
+      "acaso_uniforme",
+      "classe_majoritaria",
+      "mando_de_campo"
+    ],
+    "modelo": {
+      "tipo": "xgboost",
+      "objective": "multi:softprob",
+      "num_class": 3,
+      "eval_metric": "mlogloss",
+      "params_default": {
+        "max_depth": 6,
+        "eta": 0.3,
+        "num_boost_round": 100
+      }
+    },
+    "otimizacao": {
+      "n_trials": 50,
+      "direcao": "maximize",
+      "metricas": [
+        "f1_macro",
+        "acuracia"
+      ],
+      "metrica_principal": "f1_macro",
+      "janela": [
+        "treino",
+        "validacao"
+      ],
+      "conjuntos": [
+        "tatico_11",
+        "completo_12"
+      ],
+      "validacao": {
+        "tipo": "kfold_agrupado_estratificado",
+        "n_splits": 5,
+        "chave_grupo": "match_id"
+      },
+      "espaco": {
+        "num_boost_round": {
+          "tipo": "int",
+          "low": 50,
+          "high": 800
+        },
+        "eta": {
+          "tipo": "float",
+          "low": 0.01,
+          "high": 0.3,
+          "log": true
+        },
+        "max_depth": {
+          "tipo": "int",
+          "low": 2,
+          "high": 8
+        },
+        "min_child_weight": {
+          "tipo": "int",
+          "low": 1,
+          "high": 20
+        },
+        "subsample": {
+          "tipo": "float",
+          "low": 0.6,
+          "high": 1.0
+        },
+        "colsample_bytree": {
+          "tipo": "float",
+          "low": 0.5,
+          "high": 1.0
+        },
+        "lambda": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "alpha": {
+          "tipo": "float",
+          "low": 0.001,
+          "high": 10.0,
+          "log": true
+        },
+        "gamma": {
+          "tipo": "float",
+          "low": 1e-08,
+          "high": 1.0,
+          "log": true
+        },
+        "balanceamento": {
+          "tipo": "categorico",
+          "escolhas": [
+            "nenhum",
+            "balanceado"
+          ]
+        }
+      }
+    },
+    "comparativo": [
+      "classe_majoritaria",
+      "mando_de_campo",
+      "regressao_logistica",
+      "xgboost_default",
+      "xgboost_otimizado"
+    ],
+    "_arquivo_config": "config\\experiment.yaml"
+  },
+  "avaliacao": {
+    "particao_interna": "teste",
+    "particoes_avaliadas": [
+      "teste",
+      "ext_elite_pos2016",
+      "ext_laliga_2010_2015",
+      "ext_isl_2021_22",
+      "ext_selecoes"
+    ],
+    "run_wp2": "20260818T223606_wp2_otimizacao",
+    "hiperparametros_wp2": {
+      "tatico_11": {
+        "f1_macro": {
+          "num_boost_round": 408,
+          "eta": 0.010484032982955499,
+          "max_depth": 4,
+          "min_child_weight": 10,
+          "subsample": 0.9498334124982476,
+          "colsample_bytree": 0.7998459801210437,
+          "lambda": 0.12724930220974956,
+          "alpha": 0.8574024509098008,
+          "gamma": 1.6666273722819583e-05,
+          "balanceamento": "balanceado"
+        },
+        "acuracia": {
+          "num_boost_round": 131,
+          "eta": 0.011128194768838964,
+          "max_depth": 6,
+          "min_child_weight": 7,
+          "subsample": 0.8034282764658811,
+          "colsample_bytree": 0.9537832369630466,
+          "lambda": 0.009935023909063692,
+          "alpha": 0.04380580767905655,
+          "gamma": 0.011076667222301087,
+          "balanceamento": "nenhum"
+        }
+      },
+      "completo_12": {
+        "f1_macro": {
+          "num_boost_round": 538,
+          "eta": 0.012282288492376803,
+          "max_depth": 7,
+          "min_child_weight": 9,
+          "subsample": 0.6624585808010421,
+          "colsample_bytree": 0.7625723108736131,
+          "lambda": 0.005104634280611143,
+          "alpha": 6.509925721668344,
+          "gamma": 3.63729738202624e-07,
+          "balanceamento": "balanceado"
+        },
+        "acuracia": {
+          "num_boost_round": 125,
+          "eta": 0.011529488465804719,
+          "max_depth": 6,
+          "min_child_weight": 7,
+          "subsample": 0.8046962589992289,
+          "colsample_bytree": 0.9658973267714108,
+          "lambda": 0.009561515100621002,
+          "alpha": 0.04743975996742129,
+          "gamma": 0.009935994999679915,
+          "balanceamento": "nenhum"
+        }
+      }
+    },
+    "modelos_declarados": [
+      {
+        "Modelo": "XGBoost otimizado",
+        "Atributos": "11 atrib.",
+        "Otimizado para": "f1_macro",
+        "origem": "outputs\\runs\\20260818T223606_wp2_otimizacao\\modelo_tatico_11_f1_macro.ubj"
+      },
+      {
+        "Modelo": "XGBoost otimizado",
+        "Atributos": "11 atrib.",
+        "Otimizado para": "acuracia",
+        "origem": "outputs\\runs\\20260818T223606_wp2_otimizacao\\modelo_tatico_11_acuracia.ubj"
+      },
+      {
+        "Modelo": "XGBoost default",
+        "Atributos": "11 atrib.",
+        "Otimizado para": "—",
+        "origem": "ajustado em treino ∪ validação"
+      },
+      {
+        "Modelo": "regressão logística",
+        "Atributos": "11 atrib.",
+        "Otimizado para": "—",
+        "origem": "ajustado em treino ∪ validação"
+      },
+      {
+        "Modelo": "classe majoritária",
+        "Atributos": "—",
+        "Otimizado para": "—",
+        "origem": "ajustado em treino ∪ validação"
+      },
+      {
+        "Modelo": "mando de campo",
+        "Atributos": "—",
+        "Otimizado para": "—",
+        "origem": "ajustado em treino ∪ validação"
+      },
+      {
+        "Modelo": "XGBoost otimizado",
+        "Atributos": "12 atrib.",
+        "Otimizado para": "f1_macro",
+        "origem": "outputs\\runs\\20260818T223606_wp2_otimizacao\\modelo_completo_12_f1_macro.ubj"
+      },
+      {
+        "Modelo": "XGBoost otimizado",
+        "Atributos": "12 atrib.",
+        "Otimizado para": "acuracia",
+        "origem": "outputs\\runs\\20260818T223606_wp2_otimizacao\\modelo_completo_12_acuracia.ubj"
+      },
+      {
+        "Modelo": "XGBoost default",
+        "Atributos": "12 atrib.",
+        "Otimizado para": "—",
+        "origem": "ajustado em treino ∪ validação"
+      },
+      {
+        "Modelo": "regressão logística",
+        "Atributos": "12 atrib.",
+        "Otimizado para": "—",
+        "origem": "ajustado em treino ∪ validação"
+      }
+    ],
+    "n_bootstrap": 2000,
+    "reabertura": null
+  },
+  "resultados": [
+    {
+      "Partição": "teste",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 340,
+      "acuracia": 46.18,
+      "acuracia_ic95": "[41.76; 50.59]",
+      "f1_macro": 43.44,
+      "f1_macro_ic95": "[39.38; 47.46]",
+      "f1_Derrota": 51.79,
+      "f1_Empate": 22.69,
+      "f1_Vitória": 55.83,
+      "log_loss": 1.0377
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 340,
+      "acuracia": 52.06,
+      "acuracia_ic95": "[47.5; 56.62]",
+      "f1_macro": 39.17,
+      "f1_macro_ic95": "[36.32; 42.03]",
+      "f1_Derrota": 57.43,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 60.07,
+      "log_loss": 1.0133
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "XGBoost default",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 340,
+      "acuracia": 46.91,
+      "acuracia_ic95": "[42.65; 51.03]",
+      "f1_macro": 43.28,
+      "f1_macro_ic95": "[39.29; 47.19]",
+      "f1_Derrota": 50.76,
+      "f1_Empate": 23.69,
+      "f1_Vitória": 55.37,
+      "log_loss": 1.1768
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "regressão logística",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 340,
+      "acuracia": 51.47,
+      "acuracia_ic95": "[46.91; 56.18]",
+      "f1_macro": 38.58,
+      "f1_macro_ic95": "[35.69; 41.57]",
+      "f1_Derrota": 57.0,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 58.72,
+      "log_loss": 1.009
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "classe majoritária",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 340,
+      "acuracia": 38.97,
+      "acuracia_ic95": "[36.76; 41.03]",
+      "f1_macro": 18.69,
+      "f1_macro_ic95": "[17.92; 19.4]",
+      "f1_Derrota": 0.0,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 56.08,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "mando de campo",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 340,
+      "acuracia": 49.41,
+      "acuracia_ic95": "[43.82; 54.71]",
+      "f1_macro": 37.02,
+      "f1_macro_ic95": "[33.28; 40.5]",
+      "f1_Derrota": 55.54,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 55.54,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 340,
+      "acuracia": 45.74,
+      "acuracia_ic95": "[41.62; 49.85]",
+      "f1_macro": 42.65,
+      "f1_macro_ic95": "[38.71; 46.41]",
+      "f1_Derrota": 50.2,
+      "f1_Empate": 21.6,
+      "f1_Vitória": 56.13,
+      "log_loss": 1.0295
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 340,
+      "acuracia": 52.06,
+      "acuracia_ic95": "[47.5; 56.76]",
+      "f1_macro": 39.2,
+      "f1_macro_ic95": "[36.2; 42.12]",
+      "f1_Derrota": 56.95,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 60.65,
+      "log_loss": 1.011
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "XGBoost default",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 340,
+      "acuracia": 47.5,
+      "acuracia_ic95": "[43.38; 51.62]",
+      "f1_macro": 43.41,
+      "f1_macro_ic95": "[39.51; 47.2]",
+      "f1_Derrota": 51.7,
+      "f1_Empate": 22.06,
+      "f1_Vitória": 56.47,
+      "log_loss": 1.1582
+    },
+    {
+      "Partição": "teste",
+      "Modelo": "regressão logística",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 340,
+      "acuracia": 51.62,
+      "acuracia_ic95": "[47.06; 56.47]",
+      "f1_macro": 38.68,
+      "f1_macro_ic95": "[35.85; 41.76]",
+      "f1_Derrota": 57.33,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 58.72,
+      "log_loss": 1.0011
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 264,
+      "acuracia": 60.04,
+      "acuracia_ic95": "[54.73; 65.15]",
+      "f1_macro": 50.02,
+      "f1_macro_ic95": "[46.03; 54.02]",
+      "f1_Derrota": 66.99,
+      "f1_Empate": 11.76,
+      "f1_Vitória": 71.31,
+      "log_loss": 0.8944
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 264,
+      "acuracia": 64.02,
+      "acuracia_ic95": "[58.9; 69.13]",
+      "f1_macro": 47.75,
+      "f1_macro_ic95": "[44.4; 51.03]",
+      "f1_Derrota": 70.59,
+      "f1_Empate": 1.96,
+      "f1_Vitória": 70.7,
+      "log_loss": 0.9061
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "XGBoost default",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 264,
+      "acuracia": 55.87,
+      "acuracia_ic95": "[50.76; 60.8]",
+      "f1_macro": 47.53,
+      "f1_macro_ic95": "[43.51; 51.79]",
+      "f1_Derrota": 63.13,
+      "f1_Empate": 15.29,
+      "f1_Vitória": 64.16,
+      "log_loss": 1.0793
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "regressão logística",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 264,
+      "acuracia": 63.07,
+      "acuracia_ic95": "[57.58; 68.56]",
+      "f1_macro": 46.45,
+      "f1_macro_ic95": "[43.12; 49.66]",
+      "f1_Derrota": 70.13,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 69.23,
+      "log_loss": 0.861
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "classe majoritária",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 264,
+      "acuracia": 40.53,
+      "acuracia_ic95": "[38.07; 42.8]",
+      "f1_macro": 19.23,
+      "f1_macro_ic95": "[18.38; 19.98]",
+      "f1_Derrota": 0.0,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 57.68,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "mando de campo",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 264,
+      "acuracia": 46.21,
+      "acuracia_ic95": "[40.15; 51.89]",
+      "f1_macro": 34.03,
+      "f1_macro_ic95": "[29.72; 37.98]",
+      "f1_Derrota": 51.05,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 51.05,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 264,
+      "acuracia": 60.61,
+      "acuracia_ic95": "[55.49; 65.53]",
+      "f1_macro": 51.21,
+      "f1_macro_ic95": "[46.87; 55.49]",
+      "f1_Derrota": 66.99,
+      "f1_Empate": 15.2,
+      "f1_Vitória": 71.43,
+      "log_loss": 0.9068
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 264,
+      "acuracia": 63.83,
+      "acuracia_ic95": "[58.52; 68.94]",
+      "f1_macro": 47.62,
+      "f1_macro_ic95": "[44.26; 50.95]",
+      "f1_Derrota": 70.56,
+      "f1_Empate": 1.96,
+      "f1_Vitória": 70.33,
+      "log_loss": 0.908
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "XGBoost default",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 264,
+      "acuracia": 56.06,
+      "acuracia_ic95": "[50.76; 60.98]",
+      "f1_macro": 48.2,
+      "f1_macro_ic95": "[43.93; 52.39]",
+      "f1_Derrota": 62.47,
+      "f1_Empate": 17.24,
+      "f1_Vitória": 64.9,
+      "log_loss": 1.0588
+    },
+    {
+      "Partição": "ext_elite_pos2016",
+      "Modelo": "regressão logística",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 264,
+      "acuracia": 63.83,
+      "acuracia_ic95": "[58.52; 69.13]",
+      "f1_macro": 47.0,
+      "f1_macro_ic95": "[43.88; 50.11]",
+      "f1_Derrota": 70.54,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 70.47,
+      "log_loss": 0.8653
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 171,
+      "acuracia": 68.71,
+      "acuracia_ic95": "[62.28; 74.85]",
+      "f1_macro": 58.88,
+      "f1_macro_ic95": "[52.43; 65.38]",
+      "f1_Derrota": 74.13,
+      "f1_Empate": 25.81,
+      "f1_Vitória": 76.72,
+      "log_loss": 0.8259
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 171,
+      "acuracia": 69.3,
+      "acuracia_ic95": "[62.87; 75.44]",
+      "f1_macro": 50.06,
+      "f1_macro_ic95": "[46.28; 53.7]",
+      "f1_Derrota": 74.1,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 76.07,
+      "log_loss": 0.8413
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "XGBoost default",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 171,
+      "acuracia": 63.45,
+      "acuracia_ic95": "[57.02; 69.3]",
+      "f1_macro": 52.28,
+      "f1_macro_ic95": "[47.09; 57.39]",
+      "f1_Derrota": 68.75,
+      "f1_Empate": 15.56,
+      "f1_Vitória": 72.55,
+      "log_loss": 0.9159
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "regressão logística",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 171,
+      "acuracia": 70.18,
+      "acuracia_ic95": "[63.74; 76.33]",
+      "f1_macro": 50.63,
+      "f1_macro_ic95": "[46.92; 54.3]",
+      "f1_Derrota": 75.16,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 76.73,
+      "log_loss": 0.7865
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "classe majoritária",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 171,
+      "acuracia": 42.4,
+      "acuracia_ic95": "[39.47; 44.74]",
+      "f1_macro": 19.85,
+      "f1_macro_ic95": "[18.87; 20.61]",
+      "f1_Derrota": 0.0,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 59.55,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "mando de campo",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 171,
+      "acuracia": 47.95,
+      "acuracia_ic95": "[40.94; 55.56]",
+      "f1_macro": 34.6,
+      "f1_macro_ic95": "[29.58; 39.49]",
+      "f1_Derrota": 51.9,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 51.9,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 171,
+      "acuracia": 68.42,
+      "acuracia_ic95": "[61.99; 74.28]",
+      "f1_macro": 58.18,
+      "f1_macro_ic95": "[52.4; 64.2]",
+      "f1_Derrota": 74.56,
+      "f1_Empate": 23.16,
+      "f1_Vitória": 76.82,
+      "log_loss": 0.8205
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 171,
+      "acuracia": 68.42,
+      "acuracia_ic95": "[61.7; 74.56]",
+      "f1_macro": 49.49,
+      "f1_macro_ic95": "[45.54; 53.03]",
+      "f1_Derrota": 73.4,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 75.08,
+      "log_loss": 0.8413
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "XGBoost default",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 171,
+      "acuracia": 65.5,
+      "acuracia_ic95": "[59.36; 71.35]",
+      "f1_macro": 55.44,
+      "f1_macro_ic95": "[49.57; 61.44]",
+      "f1_Derrota": 71.23,
+      "f1_Empate": 22.73,
+      "f1_Vitória": 72.37,
+      "log_loss": 0.9011
+    },
+    {
+      "Partição": "ext_laliga_2010_2015",
+      "Modelo": "regressão logística",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 171,
+      "acuracia": 70.18,
+      "acuracia_ic95": "[63.45; 76.32]",
+      "f1_macro": 50.64,
+      "f1_macro_ic95": "[46.93; 54.27]",
+      "f1_Derrota": 75.39,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 76.53,
+      "log_loss": 0.7933
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 115,
+      "acuracia": 49.13,
+      "acuracia_ic95": "[41.73; 56.09]",
+      "f1_macro": 47.57,
+      "f1_macro_ic95": "[40.21; 54.52]",
+      "f1_Derrota": 55.95,
+      "f1_Empate": 33.9,
+      "f1_Vitória": 52.87,
+      "log_loss": 1.0395
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 115,
+      "acuracia": 48.26,
+      "acuracia_ic95": "[39.57; 56.52]",
+      "f1_macro": 38.3,
+      "f1_macro_ic95": "[32.1; 43.79]",
+      "f1_Derrota": 57.29,
+      "f1_Empate": 2.99,
+      "f1_Vitória": 54.64,
+      "log_loss": 1.0418
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "XGBoost default",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 115,
+      "acuracia": 49.57,
+      "acuracia_ic95": "[42.17; 56.52]",
+      "f1_macro": 47.57,
+      "f1_macro_ic95": "[40.62; 54.06]",
+      "f1_Derrota": 56.14,
+      "f1_Empate": 30.77,
+      "f1_Vitória": 55.81,
+      "log_loss": 1.2525
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "regressão logística",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 115,
+      "acuracia": 46.96,
+      "acuracia_ic95": "[38.26; 55.22]",
+      "f1_macro": 36.54,
+      "f1_macro_ic95": "[30.64; 41.89]",
+      "f1_Derrota": 56.28,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 53.33,
+      "log_loss": 1.0289
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "classe majoritária",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 115,
+      "acuracia": 35.65,
+      "acuracia_ic95": "[31.74; 39.57]",
+      "f1_macro": 17.52,
+      "f1_macro_ic95": "[16.06; 18.9]",
+      "f1_Derrota": 0.0,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 52.56,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "mando de campo",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 115,
+      "acuracia": 40.0,
+      "acuracia_ic95": "[31.3; 49.57]",
+      "f1_macro": 31.13,
+      "f1_macro_ic95": "[25.17; 37.33]",
+      "f1_Derrota": 46.7,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 46.7,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 115,
+      "acuracia": 47.39,
+      "acuracia_ic95": "[40.0; 54.78]",
+      "f1_macro": 45.87,
+      "f1_macro_ic95": "[38.94; 52.56]",
+      "f1_Derrota": 56.8,
+      "f1_Empate": 31.4,
+      "f1_Vitória": 49.41,
+      "log_loss": 1.0264
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 115,
+      "acuracia": 49.57,
+      "acuracia_ic95": "[40.87; 57.83]",
+      "f1_macro": 38.58,
+      "f1_macro_ic95": "[32.67; 43.78]",
+      "f1_Derrota": 58.88,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 56.85,
+      "log_loss": 1.0407
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "XGBoost default",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 115,
+      "acuracia": 46.09,
+      "acuracia_ic95": "[38.7; 53.04]",
+      "f1_macro": 44.24,
+      "f1_macro_ic95": "[37.06; 50.89]",
+      "f1_Derrota": 52.07,
+      "f1_Empate": 30.36,
+      "f1_Vitória": 50.28,
+      "log_loss": 1.2523
+    },
+    {
+      "Partição": "ext_isl_2021_22",
+      "Modelo": "regressão logística",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 115,
+      "acuracia": 46.96,
+      "acuracia_ic95": "[38.26; 55.22]",
+      "f1_macro": 36.61,
+      "f1_macro_ic95": "[30.54; 41.86]",
+      "f1_Derrota": 56.44,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 53.4,
+      "log_loss": 1.0211
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 262,
+      "acuracia": 48.85,
+      "acuracia_ic95": "[43.7; 53.82]",
+      "f1_macro": 46.15,
+      "f1_macro_ic95": "[41.26; 50.73]",
+      "f1_Derrota": 54.81,
+      "f1_Empate": 27.42,
+      "f1_Vitória": 56.2,
+      "log_loss": 1.0033
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 262,
+      "acuracia": 52.29,
+      "acuracia_ic95": "[46.76; 57.82]",
+      "f1_macro": 39.97,
+      "f1_macro_ic95": "[36.33; 43.4]",
+      "f1_Derrota": 59.39,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 60.53,
+      "log_loss": 1.0057
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "XGBoost default",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 262,
+      "acuracia": 47.9,
+      "acuracia_ic95": "[42.56; 52.86]",
+      "f1_macro": 43.44,
+      "f1_macro_ic95": "[38.62; 47.92]",
+      "f1_Derrota": 54.12,
+      "f1_Empate": 20.85,
+      "f1_Vitória": 55.34,
+      "log_loss": 1.208
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "regressão logística",
+      "Atributos": "11 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 262,
+      "acuracia": 54.01,
+      "acuracia_ic95": "[48.28; 59.54]",
+      "f1_macro": 41.18,
+      "f1_macro_ic95": "[37.55; 44.65]",
+      "f1_Derrota": 62.04,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 61.5,
+      "log_loss": 1.002
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "classe majoritária",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 262,
+      "acuracia": 37.4,
+      "acuracia_ic95": "[34.73; 39.89]",
+      "f1_macro": 18.15,
+      "f1_macro_ic95": "[17.19; 19.01]",
+      "f1_Derrota": 0.0,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 54.44,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "mando de campo",
+      "Atributos": "—",
+      "Otimizado para": "—",
+      "Partidas": 262,
+      "acuracia": 40.46,
+      "acuracia_ic95": "[34.35; 46.56]",
+      "f1_macro": 30.86,
+      "f1_macro_ic95": "[26.67; 35.0]",
+      "f1_Derrota": 46.29,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 46.29,
+      "log_loss": NaN
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "f1_macro",
+      "Partidas": 262,
+      "acuracia": 50.19,
+      "acuracia_ic95": "[45.04; 55.15]",
+      "f1_macro": 47.77,
+      "f1_macro_ic95": "[42.89; 52.77]",
+      "f1_Derrota": 54.32,
+      "f1_Empate": 30.16,
+      "f1_Vitória": 58.82,
+      "log_loss": 1.0089
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "XGBoost otimizado",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "acuracia",
+      "Partidas": 262,
+      "acuracia": 52.29,
+      "acuracia_ic95": "[46.56; 57.63]",
+      "f1_macro": 39.97,
+      "f1_macro_ic95": "[36.24; 43.39]",
+      "f1_Derrota": 60.09,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 59.83,
+      "log_loss": 1.0044
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "XGBoost default",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 262,
+      "acuracia": 47.71,
+      "acuracia_ic95": "[42.37; 53.05]",
+      "f1_macro": 42.62,
+      "f1_macro_ic95": "[38.14; 47.25]",
+      "f1_Derrota": 53.37,
+      "f1_Empate": 17.14,
+      "f1_Vitória": 57.35,
+      "log_loss": 1.1818
+    },
+    {
+      "Partição": "ext_selecoes",
+      "Modelo": "regressão logística",
+      "Atributos": "12 atrib.",
+      "Otimizado para": "—",
+      "Partidas": 262,
+      "acuracia": 52.48,
+      "acuracia_ic95": "[46.76; 58.02]",
+      "f1_macro": 40.03,
+      "f1_macro_ic95": "[36.17; 43.61]",
+      "f1_Derrota": 60.13,
+      "f1_Empate": 0.0,
+      "f1_Vitória": 59.95,
+      "log_loss": 1.0021
+    }
+  ]
+}

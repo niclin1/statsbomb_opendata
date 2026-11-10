@@ -52,7 +52,7 @@ def create_time_series_features(input_file, output_file, window=5):
     # Select final features
     feature_cols = [
         'match_id', 'match_date', 'competition_id', 'season_id',
-        'team_name', 'opponent_name', 'is_home', 'target_win'
+        'team_name', 'opponent_name', 'is_home', 'target_multiclass'
     ]
     # Add rolling features
     feature_cols += [f'team_recent_{m}' for m in metrics]

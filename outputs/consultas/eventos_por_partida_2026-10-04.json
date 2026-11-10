@@ -1,0 +1,8 @@
+{
+ "medido_em": "2026-10-04",
+ "fonte": "_cache/statsbomb_cache.sqlite (respostas da API de eventos da StatsBomb guardadas pela ingestao)",
+ "metodo": "contagem dos eventos de cada resposta cuja URL contem /events/; todas as respostas do cache foram lidas (3540), sem amostragem",
+ "partidas_com_eventos": 3464,
+ "observacao": "o cache tem mais partidas do que as 2.635 da base final, porque guarda tudo o que a ingestao baixou",
+ "eventos_por_partida": {"minimo": 2101, "p5": 2912, "mediana": 3503, "media": 3519, "p95": 4166, "maximo": 5190}
+}

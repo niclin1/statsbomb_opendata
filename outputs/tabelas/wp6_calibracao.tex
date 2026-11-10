@@ -1,0 +1,18 @@
+% Gerado automaticamente por src/reporting/tables.py — não editar à mão.
+\begin{table}[htbp]
+\centering
+\caption{Calibração do modelo final por partição. \emph{Brier} é o erro quadrático médio das probabilidades (menor é melhor); \emph{ECE} é o desvio médio entre confiança e acerto; \emph{excesso de confiança} é a diferença entre a confiança média e a taxa de acerto — positivo indica um modelo mais confiante do que competente.}
+\label{tab:wp6-calibracao}
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Partição & Partidas & Brier & ECE (\%) & Confiança média (\%) & Acerto (\%) & Excesso de confiança (p.p.) \\
+\midrule
+teste & 340 & 0.6228 & 2.49 & 47.05 & 46.18 & 0.88 \\
+ext\_elite\_pos2016 & 264 & 0.523 & 10.89 & 52.31 & 60.04 & -7.72 \\
+ext\_laliga\_2010\_2015 & 171 & 0.4749 & 15.01 & 54.65 & 68.71 & -14.07 \\
+ext\_isl\_2021\_22 & 115 & 0.6233 & 4.39 & 47.58 & 49.13 & -1.55 \\
+ext\_selecoes & 262 & 0.5998 & 4.55 & 49.57 & 48.85 & 0.72 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,23 @@
+% Gerado automaticamente por src/reporting/tables.py — não editar à mão.
+\begin{table}[htbp]
+\centering
+\caption{Desempenho na partição validacao (287 partidas). Valores em \%, exceto Log-Loss. Intervalos de confiança de 95\% por reamostragem \emph{bootstrap} de partidas (2.000 repetições), que preserva a dependência entre as duas linhas de cada partida.}
+\label{tab:wp3-validacao}
+\small
+\begin{tabular}{lllrllrrrr}
+\toprule
+Modelo & Atributos & Otim. para & Partidas & Acurácia (IC 95\%) & F1 macro (IC 95\%) & F1 Derr. & F1 Emp. & F1 Vit. & Log-Loss \\
+\midrule
+XGBoost otimizado & 11 atrib. & f1\_macro & 287 & 63.07 [58.54; 67.42] & 62.57 [57.94; 66.91] & 65.8 & 54.76 & 67.14 & 0.8989 \\
+XGBoost otimizado & 11 atrib. & acuracia & 287 & 60.98 [56.1; 66.03] & 51.39 [47.35; 55.57] & 68.19 & 15.91 & 70.06 & 0.9015 \\
+XGBoost default & 11 atrib. & — & 287 & 99.83 [99.48; 100.0] & 99.82 [99.42; 100.0] & 99.76 & 99.69 & 100.0 & 0.1858 \\
+regressão logística & 11 atrib. & — & 287 & 50.00 [44.77; 54.88] & 38.81 [35.37; 41.95] & 58.05 & 0.0 & 58.39 & 0.9867 \\
+classe majoritária & — & — & 287 & 35.89 [33.28; 38.5] & 17.61 [16.64; 18.53] & 0.0 & 0.0 & 52.82 & -- \\
+mando de campo & — & — & 287 & 43.55 [37.28; 49.48] & 33.81 [29.57; 37.68] & 50.71 & 0.0 & 50.71 & -- \\
+XGBoost otimizado & 12 atrib. & f1\_macro & 287 & 70.73 [66.72; 74.56] & 70.52 [66.47; 74.24] & 72.63 & 67.49 & 71.43 & 0.8323 \\
+XGBoost otimizado & 12 atrib. & acuracia & 287 & 61.50 [56.62; 66.38] & 52.08 [48.16; 56.01] & 69.31 & 16.85 & 70.06 & 0.8993 \\
+XGBoost default & 12 atrib. & — & 287 & 100.00 [100.0; 100.0] & 100.00 [100.0; 100.0] & 100.0 & 100.0 & 100.0 & 0.1958 \\
+regressão logística & 12 atrib. & — & 287 & 50.17 [44.95; 55.23] & 38.94 [35.53; 42.17] & 58.66 & 0.0 & 58.16 & 0.983 \\
+\bottomrule
+\end{tabular}
+\end{table}

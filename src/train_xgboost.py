@@ -43,46 +43,57 @@ def train_and_evaluate():
     print(f"Features used ({len(features)}): {features}")
     
     X_train = train[features]
-    y_train = train['target_win']
-    
+    y_train = train['target_multiclass']
+
     X_test = test[features]
-    y_test = test['target_win']
-    
+    y_test = test['target_multiclass']
+
     # 2. Train Models
     # Baseline: Random Forest
     print("\nTraining Random Forest (Baseline)...")
     rf = RandomForestClassifier(n_estimators=100, random_state=42)
     rf.fit(X_train, y_train)
     rf_preds = rf.predict(X_test)
-    rf_probs = rf.predict_proba(X_test)[:, 1]
-    
+    rf_probs = rf.predict_proba(X_test)
+
     # Challenger: XGBoost
     print("Training XGBoost (Challenger)...")
-    xgb_model = xgb.XGBClassifier(n_estimators=100, learning_rate=0.1, max_depth=4, random_state=42, use_label_encoder=False, eval_metric='logloss')
+    xgb_model = xgb.XGBClassifier(
+        n_estimators=100, 
+        learning_rate=0.1, 
+        max_depth=4, 
+        random_state=42,
+        objective='multi:softprob',
+        num_class=3,
+        eval_metric='mlogloss'
+    )
     xgb_model.fit(X_train, y_train)
     xgb_preds = xgb_model.predict(X_test)
-    xgb_probs = xgb_model.predict_proba(X_test)[:, 1]
-    
+    xgb_probs = xgb_model.predict_proba(X_test)
+
+    from sklearn.metrics import f1_score, roc_auc_score
+
     # 3. Evaluation
     def evaluate_model(name, y_true, y_pred, y_prob):
         acc = accuracy_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred, zero_division=0)
-        rec = recall_score(y_true, y_pred, zero_division=0)
-        loss = log_loss(y_true, y_prob)
+        f1_mac = f1_score(y_true, y_pred, average='macro', zero_division=0)
+        # roc_auc = roc_auc_score(y_true, y_prob, multi_class='ovr') # Some targets might not have all classes in small sets
+        try:
+            loss = log_loss(y_true, y_prob, labels=[0, 1, 2])
+        except Exception:
+            loss = float('nan')
         cm = confusion_matrix(y_true, y_pred)
-        
+
         print(f"\n[{name}] Results:")
         print(f"Accuracy:  {acc:.2%}")
-        print(f"Precision: {prec:.2%}")
-        print(f"Recall:    {rec:.2%}")
+        print(f"F1-Macro:  {f1_mac:.2%}")
+        # print(f"ROC-AUC OVR: {roc_auc:.4f}")
         print(f"Log-Loss:  {loss:.4f}")
         print("Confusion Matrix:\n", cm)
-        return acc, prec, rec, loss
-        
+        return acc, f1_mac, loss
+
     evaluate_model("Random Forest", y_test, rf_preds, rf_probs)
-    evaluate_model("XGBoost", y_test, xgb_preds, xgb_probs)
-    
-    # 4. Explainability (Feature Importance for XGBoost)
+    evaluate_model("XGBoost", y_test, xgb_preds, xgb_probs)    # 4. Explainability (Feature Importance for XGBoost)
     importance = xgb_model.feature_importances_
     sorted_idx = np.argsort(importance)
     pos = np.arange(sorted_idx.shape[0]) + .5
@@ -100,27 +111,23 @@ def train_and_evaluate():
     print("\n--- Error Analysis ---")
     # Where was the model most confident but wrong?
     test_eval = test.copy()
-    test_eval['xgb_prob_win'] = xgb_probs
+    test_eval['xgb_prob_max'] = np.max(xgb_probs, axis=1)
     test_eval['xgb_pred'] = xgb_preds
-    test_eval['error'] = test_eval['target_win'] != test_eval['xgb_pred']
+    test_eval['error'] = test_eval['target_multiclass'] != test_eval['xgb_pred']
     
     # Calculate confidence error magnitude (Probability of predicted class vs Truth)
-    # If it predicted 1 with 90% but truth is 0, magnitude is 90%
-    # If it predicted 0 with 10% (i.e. 90% sure it's 0) but truth is 1, magnitude is 90%
-    test_eval['confidence_error'] = np.where(test_eval['xgb_pred'] == 1, 
-                                             test_eval['xgb_prob_win'], 
-                                             1 - test_eval['xgb_prob_win'])
-    
+    test_eval['confidence_error'] = test_eval['xgb_prob_max']
+
     worst_mistakes = test_eval[test_eval['error']].sort_values(by='confidence_error', ascending=False).head(3)
-    
+
     print("Top 3 partidas com maior 'certeza no erro' pelo XGBoost:")
     report_lines = []
-    
+
     for _, row in worst_mistakes.iterrows():
-        prediction = 'Vitória' if row['xgb_pred'] == 1 else 'Não-Vitória'
-        truth = 'Vitória' if row['target_win'] == 1 else 'Não-Vitória'
+        prediction = 'Vitória' if row['xgb_pred'] == 2 else ('Empate' if row['xgb_pred'] == 1 else 'Derrota')
+        truth = 'Vitória' if row['target_multiclass'] == 2 else ('Empate' if row['target_multiclass'] == 1 else 'Derrota')
         conf = row['confidence_error'] * 100
-        
+
         msg = (f"[Data: {row['match_date']}] {row['team_name']} vs {row['opponent_name']} | "
                f"Previsão: {prediction} ({conf:.1f}%) | Realidade: {truth}\n"
                f"  -> Contexto: Team xG Recente ({row['team_recent_total_xg']:.2f}) vs Opp xG ({row['opp_recent_total_xg']:.2f}) | "

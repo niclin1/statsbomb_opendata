@@ -1,0 +1,201 @@
+# Configuração única do experimento — TCC II
+#
+# REGRA: nenhum parâmetro do experimento pode ficar embutido em código.
+# Este arquivo é versionado em git e copiado integralmente para
+# outputs/runs/<run_id>/manifest.json, de forma que todo número da
+# monografia tenha procedência rastreável.
+
+meta:
+  projeto: "Predição de resultado de partidas a partir do momento tático do 1º tempo"
+  versao_config: 1
+  data_decisoes: "2026-08-10"
+  decisoes:
+    D1: "Domínio primário = 5 grandes ligas europeias 2015/16, split temporal por data. Demais blocos = validação externa. (achado A9)"
+    D2: "is_home entra no modelo principal (12 atributos); ablação 11 × 12 no WP2. (achado A6)"
+    D2_revisada: "11/08/2026 — REVERTIDA pelo WP2: modelo principal = 11 atributos táticos. is_home tem efeito nulo (-0,20 p.p. de F1 macro, 3/5 dobras) porque os atributos táticos já codificam o mando de campo (AUC 0,674 para prever is_home a partir deles). Fica como baseline a superar e como ablação documentada. Registro completo em _planning/decisoes_e_caminhos_explorados.md §4"
+    D3: "Indian Super League mantida na base, fora do domínio primário, como validação externa de nível de liga. (achado A4)"
+    D4: "Formulação espelhada por equipe mantida (contrato do TCC I); agrupamento por match_id obrigatório; n efetivo = 2.635. (achado A7)"
+
+seed: 42
+
+caminhos:
+  dataset: "data/momentum_data.csv"
+  processed_dir: "data/processed"
+  runs_dir: "outputs/runs"
+  tabelas_dir: "outputs/tabelas"
+  figuras_dir: "outputs/figuras"
+
+dataset:
+  chave_partida: "match_id"        # A7: agrupamento obrigatório — 2 linhas por partida
+  coluna_data: "match_date"
+  alvo: "target_multiclass"
+  linhas_por_partida: 2
+  classes:
+    0: "Derrota"
+    1: "Empate"
+    2: "Vitória"
+  # Invariantes da base. Se o ETL for reexecutado (WP5/WP6), estes números mudam e
+  # os testes falham DE PROPÓSITO: forçam atualização consciente do texto.
+  esperado:
+    linhas: 5270
+    partidas: 2635
+    data_min: "2010-08-29"
+    data_max: "2024-07-15"
+
+competicoes:
+  2:    {nome: "Premier League",      dominio: clubes}
+  7:    {nome: "Ligue 1",             dominio: clubes}
+  9:    {nome: "1. Bundesliga",       dominio: clubes}
+  11:   {nome: "La Liga",             dominio: clubes}
+  12:   {nome: "Serie A",             dominio: clubes}
+  1238: {nome: "Indian Super League", dominio: clubes}
+  43:   {nome: "Copa do Mundo FIFA",  dominio: selecoes}
+  55:   {nome: "Eurocopa",            dominio: selecoes}
+  223:  {nome: "Copa América",        dominio: selecoes}
+
+features:
+  taticos:
+    - xg_0_15
+    - ppda_0_15
+    - field_tilt_0_15
+    - xg_15_30
+    - ppda_15_30
+    - field_tilt_15_30
+    - xg_30_45
+    - ppda_30_45
+    - field_tilt_30_45
+  cartoes:
+    - team_red_cards_p1
+    - opp_red_cards_p1
+  contexto:
+    - is_home                      # D2/A6: mando de campo — sozinho vale 44,7% de acurácia
+  # WP5 — blocos do segundo tempo (base data/processed/momentum_v5_*.parquet)
+  taticos_45_60: [xg_45_60, ppda_45_60, field_tilt_45_60]
+  taticos_60_75: [xg_60_75, ppda_60_75, field_tilt_60_75]
+  taticos_75_90: [xg_75_90, ppda_75_90, field_tilt_75_90]
+  cartoes_2t:    [team_red_cards_p2, opp_red_cards_p2]
+  conjuntos:
+    tatico_11:   [taticos, cartoes]
+    completo_12: [taticos, cartoes, contexto]
+    # Progressão temporal do WP5: quanto cada bloco adicional do 2º tempo acrescenta.
+    # A pergunta não é "o 2º tempo ajuda?" (ajuda, por construção — 55% dos gols ocorrem
+    # nele, Alberti et al. 2013), e sim ONDE o ganho se concentra. Se ele se concentrar nos
+    # blocos finais, o ganho mede proximidade do apito, não qualidade de modelagem tática.
+    p5_1t:      [taticos, cartoes]                                              # 11
+    p5_ate_60:  [taticos, cartoes, taticos_45_60]                               # 14
+    p5_ate_75:  [taticos, cartoes, taticos_45_60, taticos_60_75]                # 17
+    p5_ate_90:  [taticos, cartoes, taticos_45_60, taticos_60_75, taticos_75_90, cartoes_2t]  # 22
+  # D2 revisada em 11/08/2026 pelo resultado do WP2: is_home tem efeito NULO no modelo
+  # final (-0,20 p.p. de F1 macro, 3/5 dobras). Mecanismo: os atributos táticos já
+  # codificam o mando de campo (AUC 0,674 para prever is_home a partir deles).
+  # O conjunto completo_12 continua sendo calculado e reportado como ablação — o caminho
+  # explorado é achado, não descarte. Ver _planning/decisoes_e_caminhos_explorados.md.
+  conjunto_principal: tatico_11
+
+particao:
+  dominio_primario:
+    nome: "Cinco grandes ligas europeias — temporada 2015/16"
+    competition_ids: [2, 7, 9, 11, 12]
+    season_ids: [27]
+    partidas_esperadas: 1823
+    split:
+      tipo: temporal_por_data      # corte por data: nenhuma rodada é dividida entre partições
+      fracoes:
+        treino: 0.65
+        validacao: 0.15
+        teste: 0.20
+  # Cada conjunto externo mede um deslocamento de distribuição diferente.
+  # Nenhum deles participa de treino, validação ou seleção de hiperparâmetros.
+  validacao_externa:
+    ext_elite_pos2016:
+      nome: "Clubes de elite pós-2016 (Barcelona, PSG, Leverkusen)"
+      mede: "deslocamento temporal + viés de equipe de elite"
+      competition_ids: [2, 7, 9, 11, 12]
+      data_min: "2016-06-01"
+      partidas_esperadas: 264
+    ext_laliga_2010_2015:
+      nome: "La Liga 2010–2015 (Barcelona)"
+      mede: "deslocamento temporal para o passado"
+      competition_ids: [11]
+      season_ids: [22, 23, 24, 25, 26]
+      partidas_esperadas: 171
+    ext_isl_2021_22:
+      nome: "Indian Super League 2021/22"
+      mede: "deslocamento de liga / nível técnico"
+      competition_ids: [1238]
+      partidas_esperadas: 115
+    ext_selecoes:
+      nome: "Torneios de seleções (Copa 2018, Euro 2020, Copa 2022, Euro 2024, Copa América 2024)"
+      mede: "deslocamento de população"
+      competition_ids: [43, 55, 223]
+      partidas_esperadas: 262
+
+baselines:
+  - acaso_uniforme                 # 1/3 — acaso, não classe majoritária (A3)
+  - classe_majoritaria             # ~37,7% — artefato da simetria da base (A7)
+  - mando_de_campo                 # ~44,7% — o baseline que o modelo do TCC I não enxergava (A6)
+
+modelo:
+  tipo: xgboost
+  objective: "multi:softprob"
+  num_class: 3
+  eval_metric: mlogloss
+  # Baseline "XGBoost sem otimização" do WP2 — explicitamente com num_boost_round,
+  # porque o default da API é 10 e foi isso que o TCC I usou sem saber (A8).
+  params_default:
+    max_depth: 6
+    eta: 0.3
+    num_boost_round: 100
+
+otimizacao:
+  n_trials: 50                     # A1: o código do TCC I rodava n_trials=1
+  direcao: maximize
+  # Um estudo por métrica. Decisão de 18/08/2026, após a reunião de orientação: em vez de
+  # escolher uma métrica e argumentar, otimizar para as duas e reportar a troca com número.
+  # F1 macro pesa o empate igual às demais classes; acurácia deixa o modelo livre para
+  # abandoná-lo. A diferença entre os dois modelos É o resultado.
+  metricas: [f1_macro, acuracia]
+  metrica_principal: f1_macro
+  # A busca roda sobre treino ∪ validação. O teste não participa de nada aqui.
+  janela: [treino, validacao]
+  # Um estudo independente por conjunto de atributos: otimizar só para 12 e depois
+  # reaproveitar os hiperparâmetros em 11 tornaria a ablação (D2) enviesada.
+  conjuntos: [tatico_11, completo_12]
+  validacao:
+    tipo: kfold_agrupado_estratificado   # A7: agrupado por match_id, nunca linhas soltas
+    n_splits: 5
+    chave_grupo: match_id
+  espaco:
+    num_boost_round:  {tipo: int,   low: 50,   high: 800}          # A8: era fixo em 10
+    eta:              {tipo: float, low: 0.01, high: 0.3, log: true}
+    max_depth:        {tipo: int,   low: 2,    high: 8}
+    min_child_weight: {tipo: int,   low: 1,    high: 20}
+    subsample:        {tipo: float, low: 0.6,  high: 1.0}
+    colsample_bytree: {tipo: float, low: 0.5,  high: 1.0}
+    lambda:           {tipo: float, low: 1.0e-3, high: 10.0, log: true}
+    alpha:            {tipo: float, low: 1.0e-3, high: 10.0, log: true}
+    gamma:            {tipo: float, low: 1.0e-8, high: 1.0,  log: true}
+    # Peso por classe entra como hiperparâmetro em vez de decisão minha: o empate é 24,6%
+    # das linhas, e "balancear ou não" é justamente o que decide se o modelo tenta prever
+    # empate. Deixar o Optuna decidir nas dobras de validação é mais defensável do que
+    # escolher a dedo — e o resultado da escolha fica registrado no estudo.
+    balanceamento:    {tipo: categorico, escolhas: [nenhum, balanceado]}
+
+# Modelos comparados no WP2, todos sob a MESMA validação cruzada agrupada.
+# Sem este contraste não há como afirmar que a otimização bayesiana agregou algo.
+wp5:
+  # A comparação roda por validação cruzada sobre treino ∪ validação, NÃO sobre o teste.
+  # Justificativa: a pergunta é comparativa entre variantes de atributos, e responder a ela
+  # não exige a estimativa não enviesada que o teste reservado fornece. Reabrir o teste para
+  # isso gastaria a única avaliação limpa disponível num experimento que não precisa dela.
+  # Ressalva a declarar no texto: o WP3 mostrou que ganhos medidos em validação cruzada não
+  # necessariamente transferem para o teste, então as magnitudes abaixo são teto, não previsão.
+  conjuntos: [p5_1t, p5_ate_60, p5_ate_75, p5_ate_90]
+  n_trials: 30
+
+comparativo:
+  - classe_majoritaria
+  - mando_de_campo
+  - regressao_logistica
+  - xgboost_default
+  - xgboost_otimizado

@@ -1,0 +1,80 @@
+# Python and Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.env
+
+# Cache do StatsBomb (~10 GB de sqlite). NUNCA versionar — é regenerável pelo ETL.
+_cache/
+
+# ---------------------------------------------------------------------------
+# Dados: a base do experimento é versionada de propósito. O manifest de cada run
+# registra o sha256 dela; se o arquivo não estiver no git, o hash não prova nada.
+# ---------------------------------------------------------------------------
+data/*
+!data/momentum_data.csv
+!data/processed/
+data/processed/*
+!data/processed/*.parquet
+
+# ---------------------------------------------------------------------------
+# Saídas: manifests, tabelas e figuras SÃO a procedência de todo número da
+# monografia (regra 2 do plano) e precisam estar no git. Modelos serializados,
+# logs e estudos do Optuna são grandes e regeneráveis — ficam fora.
+# ---------------------------------------------------------------------------
+outputs/*
+!outputs/tabelas/
+!outputs/figuras/
+!outputs/consultas/
+!outputs/teste_aberto.json
+!outputs/runs/
+outputs/runs/*/*
+!outputs/runs/*/manifest.json
+!outputs/runs/*/*.csv
+*.ubj
+*.pkl
+*.joblib
+study.db
+
+# IDEs
+.vscode/
+.idea/
+
+# LaTeX files
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.lof
+*.lot
+*.ptc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Artigos de terceiros usados como fonte (direitos autorais): ficam so na maquina local.
+referencias/*.pdf
+
+# ---------------------------------------------------------------------------
+# Material pessoal, de terceiros ou de trabalho do autor: nunca publicar.
+# ---------------------------------------------------------------------------
+referencias/
+_planning/
+feedback/
+custom_rag_pipeline/
+monografia-template1/
+slides_cefet/
+slides_cefet_tcc1_backup/
+/*.pdf
+*.docx
+*.zip
+vocabulário.md
+vocabulário.txt
+notelm1.md
+fix.py
+.github/

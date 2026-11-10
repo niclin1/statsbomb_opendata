@@ -90,12 +90,16 @@ def build_dataset(competition_id=43, season_id=3): # WC 2018
         # Or predict Match Result (Home/Draw/Away) based on HomeStats vs AwayStats?
         # Standard approach: Predict Match Result.
         
+        # Determine Result (2: Win, 1: Draw, 0: Loss) for each team
         if home_score > away_score:
-            result = 0 # Home Win
+            home_result = 2  # Win
+            away_result = 0  # Loss
         elif home_score == away_score:
-            result = 1 # Draw
+            home_result = 1  # Draw
+            away_result = 1  # Draw
         else:
-            result = 2 # Away Win
+            home_result = 0  # Loss
+            away_result = 2  # Win
             
         # Append rows for feature engineering (we need a row per team per date to calculate rolling avgs)
         # Row for Home Team
@@ -107,7 +111,7 @@ def build_dataset(competition_id=43, season_id=3): # WC 2018
             'is_home': 1,
             'goals_for': home_score,
             'goals_against': away_score,
-            'result': result, # This matches the match result
+            'target_multiclass': home_result,
             **metrics[home_team]
         })
         
@@ -120,7 +124,7 @@ def build_dataset(competition_id=43, season_id=3): # WC 2018
             'is_home': 0,
             'goals_for': away_score,
             'goals_against': home_score,
-            'result': result, # Same result target
+            'target_multiclass': away_result,
             **metrics[away_team]
         })
         
@@ -163,7 +167,7 @@ def prepare_match_level_dataset(df_rolling):
     dataset = pd.merge(
         home_rows, 
         away_rows, 
-        on=['match_id', 'date', 'result'], 
+        on=['match_id', 'date'], 
         suffixes=('_home', '_away')
     )
     
@@ -177,7 +181,7 @@ def train_model(dataset):
     print(f"Features ({len(feature_cols)}): {feature_cols}")
     
     X = dataset[feature_cols]
-    y = dataset['result']
+    y = dataset['target_multiclass_home'] # Predict for Home Team (2=Win, 1=Draw, 0=Loss)
     
     # Chronological Split
     # Sort just in case
@@ -199,14 +203,25 @@ def train_model(dataset):
     preds = model.predict(X_test)
     
     acc = accuracy_score(y_test, preds)
-    print(f"\nAccuracy: {acc:.4f}")
+    # Get probabilities for log loss if available
+    try:
+        preds_proba = model.predict_proba(X_test)
+        ll = log_loss(y_test, preds_proba, labels=[0, 1, 2])
+    except Exception:
+        ll = float('nan')
+        
+    from sklearn.metrics import f1_score, log_loss
+    f1_macro = f1_score(y_test, preds, average='macro')
     
+    print(f"\nAccuracy: {acc:.4f}")
+    print(f"F1-Score (Macro): {f1_macro:.4f}")
+    print(f"Log Loss: {ll:.4f}")
+
     print("\nConfusion Matrix:")
     print(confusion_matrix(y_test, preds))
-    
+
     print("\nClassification Report:")
-    print(classification_report(y_test, preds, labels=[0, 1, 2], target_names=['Home Win', 'Draw', 'Away Win']))
-    
+    print(classification_report(y_test, preds, labels=[0, 1, 2], target_names=['Loss', 'Draw', 'Win']))
     return model
 
 if __name__ == "__main__":

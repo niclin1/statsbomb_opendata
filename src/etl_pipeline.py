@@ -133,16 +133,13 @@ def process_match(match_details, comp_id, season_id):
     home_score = match_details['home_score']
     away_score = match_details['away_score']
     
-    home_result = 0 if home_score > away_score else (1 if home_score == away_score else 2)
-    away_result = 2 if home_result == 0 else (1 if home_result == 1 else 0)
-    # Using 1 for Win, 0 for Draw/Loss makes binary classification easier later, 
-    # but the prompt asked for multi-class target_win (1 if won, 0 if not). Let's use 1 = Win, 0 = Draw/Loss
-    target_win_home = 1 if home_score > away_score else 0
-    target_win_away = 1 if away_score > home_score else 0
+    # Target Multiclass: 2 = Win, 1 = Draw, 0 = Loss
+    target_multiclass_home = 2 if home_score > away_score else (1 if home_score == away_score else 0)
+    target_multiclass_away = 2 if away_score > home_score else (1 if home_score == away_score else 0)
 
-    for team, opponent, is_home, goals_for, goals_against, target_win in [
-        (home_team, away_team, 1, home_score, away_score, target_win_home),
-        (away_team, home_team, 0, away_score, home_score, target_win_away)
+    for team, opponent, is_home, goals_for, goals_against, target_multiclass in [
+        (home_team, away_team, 1, home_score, away_score, target_multiclass_home),
+        (away_team, home_team, 0, away_score, home_score, target_multiclass_away)
     ]:
         row = {
             'match_id': match_id,
@@ -154,7 +151,7 @@ def process_match(match_details, comp_id, season_id):
             'is_home': is_home,
             'goals_for': goals_for,
             'goals_against': goals_against,
-            'target_win': target_win,
+            'target_multiclass': target_multiclass,
             'field_tilt': field_tilt.get(team, 0.0),
             'ppda': calculate_ppda(events, team),
             'total_xg': calculate_xg(events, team),

@@ -1,6 +1,6 @@
 # Relatório de Execução: Iteração 02 (Escalonamento e Modelagem Preditiva)
 
-Este documento detalha as etapas práticas implementadas na "Iteração 02" do projeto Anti Gravity, cujo objetivo principal foi sanar as deficiências estatísticas (N=32) descobertas na Fase Piloto e estabelecer um pipeline funcional de *Machine Learning* capaz de realizar predições.
+Este documento detalha as etapas práticas implementadas na "Iteração 02" do projeto, cujo objetivo principal foi sanar as deficiências estatísticas (N=32) descobertas na Fase Piloto e estabelecer um pipeline funcional de *Machine Learning* capaz de realizar predições.
 
 ## 1. Escalonamento de Dados (ETL Pipeline)
 Com base no diagnóstico sistêmico anterior, a unidade de análise foi alterada de *Jogador-Partida* para **Equipe-Partida**.
@@ -8,10 +8,10 @@ Com base no diagnóstico sistêmico anterior, a unidade de análise foi alterada
 - **Implementação**: Foi desenvolvido o script `src/etl_pipeline.py` para automatizar a ingestão massiva de dados via *StatsBomb API*.
 - **Amostragem Base**: Para o ambiente de testes atual, foi utilizado um recorte de aproximadamente 300 partidas oriundas de torneios como a Copa do Mundo. Essa quantidade foi determinada para otimizar o uso do armazenamento local (*Disk Space*), garantindo volume estatístico suficiente sem comprometer o *hardware*.
 - **Engenharia de Métricas Brutas**: Durante o ETL, as seguintes variáveis táticas foram calculadas nativamente a partir das coordenadas dos eventos:
-  - **Total xG** (Gols Esperados)
-  - **Field Tilt** (Domínio Territorial)
-  - **PPDA** (Intensidade de Pressão Defensiva)
-  - **Deep Completions** (Passes efetivos próximos/dentro da área restrita)
+ - **Total xG** (Gols Esperados)
+ - **Field Tilt** (Domínio Territorial)
+ - **PPDA** (Intensidade de Pressão Defensiva)
+ - **Deep Completions** (Passes efetivos próximos/dentro da área restrita)
 
 ## 2. Inteligência Visual Avançada
 Para validar o contexto tático e fornecer recursos explicativos ao projeto, o script `src/visualize_advanced.py` implementou técnicas de mapeamento da biblioteca `mplsoccer`.
@@ -33,12 +33,12 @@ A etapa final (`src/train_xgboost.py`) testou as heurísticas implementadas por 
 
 ### Resultados Obtidos:
 - **Modelo Baseline (Random Forest)**:
-  - Acurácia: 60.00%
+ - Acurácia: 60.00%
 - **Modelo Challenger (XGBoost)**:
-  - Acurácia: **65.00%**
-  - Precision: 50.00%
-  - Recall: 64.29%
-  - Log-Loss: 0.8710
+ - Acurácia: **65.00%**
+ - Precision: 50.00%
+ - Recall: 64.29%
+ - Log-Loss: 0.8710
 
 ### Discussão e Importância das Variáveis
 A adoção da unidade correta (*Team-Match*) e da arquitetura temporal elevaram a performance do projeto de absurdos **0% (Fase Piloto) para 65% (Iteração 02)**. Esta acurácia representa um desempenho preditivo real e utilizável em análises esportivas. 

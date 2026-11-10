@@ -1,0 +1,25 @@
+% Gerado automaticamente por src/reporting/tables.py — não editar à mão.
+\begin{table}[htbp]
+\centering
+\caption{Comparação sob validação cruzada de 5 dobras agrupadas por partida, em treino $\cup$ validação (o teste não participa). Valores em \%, exceto Log-Loss; \emph{sd} é o desvio-padrão do F1 macro entre dobras. Log-Loss não se aplica às regras determinísticas.}
+\label{tab:wp2-comparativo}
+\small
+\begin{tabular}{lllrrrrrrr}
+\toprule
+Atrib. & Modelo & Otimizado para & Acurácia & F1 macro & sd & F1 Derrota & F1 Empate & F1 Vitória & Log-Loss \\
+\midrule
+11 (tático) & classe majoritária & — & 36.58 & 17.86 & 0.02 & 0.0 & 0.0 & 53.57 & -- \\
+11 (tático) & mando de campo & — & 43.29 & 33.33 & 2.22 & 50.0 & 0.0 & 50.0 & -- \\
+11 (tático) & regressão logística & — & 50.54 & 38.97 & 0.92 & 57.95 & 0.0 & 58.97 & 0.99 \\
+11 (tático) & XGBoost default & — & 45.72 & 42.83 & 2.89 & 52.03 & 23.92 & 52.54 & 1.22 \\
+11 (tático) & XGBoost otimizado & f1\_macro & 48.14 & 46.28 & 1.77 & 53.52 & 29.29 & 56.03 & 1.02 \\
+11 (tático) & XGBoost otimizado & acuracia & 49.93 & 39.83 & 1.24 & 56.82 & 4.38 & 58.3 & 1.02 \\
+12 (+ mando) & classe majoritária & — & 36.58 & 17.86 & 0.02 & 0.0 & 0.0 & 53.57 & -- \\
+12 (+ mando) & mando de campo & — & 43.29 & 33.33 & 2.22 & 50.0 & 0.0 & 50.0 & -- \\
+12 (+ mando) & regressão logística & — & 51.21 & 39.55 & 0.57 & 58.55 & 0.25 & 59.85 & 0.99 \\
+12 (+ mando) & XGBoost default & — & 46.32 & 43.47 & 2.55 & 52.19 & 25.06 & 53.15 & 1.22 \\
+12 (+ mando) & XGBoost otimizado & f1\_macro & 47.81 & 46.08 & 2.48 & 52.79 & 30.38 & 55.08 & 1.03 \\
+12 (+ mando) & XGBoost otimizado & acuracia & 50.37 & 39.93 & 0.69 & 57.02 & 3.81 & 58.96 & 1.02 \\
+\bottomrule
+\end{tabular}
+\end{table}
